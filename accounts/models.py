@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    nickname = models.CharField(
+    address = models.CharField(
         max_length=15,
         unique=True,
         null=True,
@@ -10,8 +10,9 @@ class User(AbstractUser):
     
     description = models.TextField(
         max_length=100,
+        blank=True,
         null=True,
     )
 
     def __str__(self):
-        return self.nickname or "self.nickname is None"
+        return self.username or "username is None"

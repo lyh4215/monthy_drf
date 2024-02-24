@@ -26,4 +26,4 @@ class Post(models.Model):
 
 
 class PostImage(models.Model):
-    image = models.ImageField(upload_to='images/')
+    src = models.ImageField(upload_to='images/')

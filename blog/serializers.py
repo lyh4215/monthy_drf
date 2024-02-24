@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Post, PostImage
-from django.contrib.auth.models import User
+from accounts.models import User
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -16,8 +16,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ['author']
 
     def create(self, validated_data):
-        authorname = self.context['request'].data['authorname']
-        validated_data['author'] = User.objects.get(username=authorname)
+        address = self.context['request'].data['address']
+        validated_data['author'] = User.objects.get(address=address)
         return super().create(validated_data)
     
 
