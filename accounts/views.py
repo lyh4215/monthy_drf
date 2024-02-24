@@ -12,7 +12,7 @@ from allauth.socialaccount.providers.kakao import views as kakao_views
 BASE_URL = "http://localhost:8000"
 KAKAO_CALLBACK_URI = BASE_URL + "/accounts/kakao/login/callback"
 KAKAO_SOCIAL_LOGIN_URI = BASE_URL + "/accounts/kakao/login/complete/"
-FRONT_REDIRECT_URL = "http://localhost:3000/login/callback"
+FRONT_REDIRECT_URL = "http://localhost:3000/logincallback"
 
 KAKAO_AUTHORIZE_API = "https://kauth.kakao.com/oauth/authorize"
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
