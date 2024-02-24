@@ -36,9 +36,6 @@ CORS_ALLOWED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'accounts.apps.AccountsConfig',
-    'blog.apps.BlogConfig',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,8 +44,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
+    'accounts.apps.AccountsConfig',
+    'blog.apps.BlogConfig',
+
     'rest_framework',
-    'rest_framework.authtoken',
+    # 'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
 
@@ -189,15 +189,15 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-SOCIALACCOUNT_PROVIDERS = {
-  'kakao': {
-    'APP': {
-      'client_id': os.environ.get('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
-      'secret': os.environ.get('SOCIAL_AUTH_KAKAO_SECRET'),
-      'key': '',
-    }
-  }
-}
+# SOCIALACCOUNT_PROVIDERS = {
+#   'kakao': {
+#     'APP': {
+#       'client_id': os.environ.get('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
+#       'secret': os.environ.get('SOCIAL_AUTH_KAKAO_SECRET'),
+#       'key': '',
+#     }
+#   }
+# }
 
 REST_AUTH = {
   "TOKEN_MODEL": None,
