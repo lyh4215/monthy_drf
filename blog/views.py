@@ -1,5 +1,5 @@
 from .serializers import PostSerializer, PostImageSerializer, PostCreateSerializer
-from .models import Post
+from .models import Post, PostImage
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
@@ -45,3 +45,11 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageSerializer
+
+class PostImageDestroyAPIView(generics.DestroyAPIView):
+    serializer_class = PostImageSerializer
+    queryset = PostImage.objects.all()
+
+    def get_object(self):
+        src = self.kwargs.get('src')
+        return PostImage.objects.get(image=src)
