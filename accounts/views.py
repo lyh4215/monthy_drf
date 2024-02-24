@@ -3,7 +3,6 @@ from rest_framework import status
 import requests
 import os
 from .models import User
-from django.http import JsonResponse
 from django.shortcuts import redirect
 
 from dj_rest_auth.registration.views import SocialLoginView
@@ -11,11 +10,13 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.kakao import views as kakao_views
 
 BASE_URL = "http://localhost:8000"
+KAKAO_CALLBACK_URI = BASE_URL + "/accounts/kakao/login/callback"
+KAKAO_SOCIAL_LOGIN_URI = BASE_URL + "/accounts/kakao/login/complete/"
+FRONT_REDIRECT_URL = "http://localhost:3000/login/callback"
+
 KAKAO_AUTHORIZE_API = "https://kauth.kakao.com/oauth/authorize"
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
 KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
-KAKAO_CALLBACK_URI = "http://localhost:8000/accounts/kakao/login/callback"
-KAKAO_SOCIAL_LOGIN_URI = "http://localhost:8000/accounts/kakao/login/complete/"
 
 
 def kakao_login(request):
@@ -49,7 +50,11 @@ def kakao_login_callback(request):
     
     accept_json = accept.json()
     accept_json.pop('user')
-    return JsonResponse(accept_json)
+
+    response = redirect(FRONT_REDIRECT_URL)
+    response.set_cookie('access', access_token)
+    response.set_cookie('refresh', accept_json.get('refresh'))
+    return response
 
 def request_token(code):
     headers = {
