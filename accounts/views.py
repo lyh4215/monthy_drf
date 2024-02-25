@@ -8,11 +8,12 @@ from django.shortcuts import redirect
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.kakao import views as kakao_views
+from rest_framework import generics
+from rest_framework.decorators import api_view
 
 BASE_URL = "http://localhost:8000"
-KAKAO_CALLBACK_URI = BASE_URL + "/accounts/kakao/login/callback"
+KAKAO_CALLBACK_URI = "http://localhost:3000/logincallback/kakao"
 KAKAO_SOCIAL_LOGIN_URI = BASE_URL + "/accounts/kakao/login/complete/"
-FRONT_REDIRECT_URL = "http://localhost:3000/logincallback"
 
 KAKAO_AUTHORIZE_API = "https://kauth.kakao.com/oauth/authorize"
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
@@ -23,6 +24,7 @@ def kakao_login(request):
     client_id = os.environ.get('SOCIAL_AUTH_KAKAO_CLIENT_ID')
     return redirect(f"{KAKAO_AUTHORIZE_API}?client_id={client_id}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code")
 
+@api_view(['GET'])
 def kakao_login_callback(request):
     code = request.GET.get("code")
     if request.GET.get("error") is not None:
@@ -50,10 +52,8 @@ def kakao_login_callback(request):
     
     accept_json = accept.json()
     accept_json.pop('user')
-
-    response = redirect(FRONT_REDIRECT_URL)
-    response.set_cookie('access', access_token)
-    response.set_cookie('refresh', accept_json.get('refresh'))
+    response = Response({ 'access': accept_json.pop('access') }, status=status.HTTP_200_OK)
+    response.set_cookie('refresh', accept_json.pop('refresh'), httponly=True)
     return response
 
 def request_token(code):

@@ -33,6 +33,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://monthly.react.bitter.s3-website-ap-southeast-2.amazonaws.com',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,7 +50,7 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',
 
     'rest_framework',
-    # 'rest_framework.authtoken',
+    'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
 
@@ -66,9 +68,9 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 REST_FRAMEWORK = {
-    # 'DEFAULT_RENDERER_CLASSES': [
-    #     'rest_framework.renderers.JSONRenderer',
-    # ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
   
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
