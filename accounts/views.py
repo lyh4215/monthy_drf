@@ -9,7 +9,8 @@ from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.kakao import views as kakao_views
 from rest_framework import generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 BASE_URL = "http://localhost:8000"
 KAKAO_CALLBACK_URI = "http://localhost:3000/logincallback/kakao"
@@ -25,6 +26,7 @@ def kakao_login(request):
     return redirect(f"{KAKAO_AUTHORIZE_API}?client_id={client_id}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code")
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def kakao_login_callback(request):
     code = request.GET.get("code")
     if request.GET.get("error") is not None:
