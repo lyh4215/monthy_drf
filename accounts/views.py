@@ -3,6 +3,7 @@ from rest_framework import status
 import requests
 import os
 from .models import User
+from .serializers import UserSerializer
 from django.shortcuts import redirect
 
 from dj_rest_auth.registration.views import SocialLoginView
@@ -86,3 +87,10 @@ class KakaoSocialLogin(SocialLoginView):
     client_class = OAuth2Client
     callback_url = KAKAO_CALLBACK_URI
         
+
+class UserRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
