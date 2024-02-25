@@ -88,7 +88,7 @@ class KakaoSocialLogin(SocialLoginView):
     callback_url = KAKAO_CALLBACK_URI
         
 
-class UserRetrieveAPIView(generics.RetrieveAPIView):
+class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
