@@ -12,6 +12,9 @@ from allauth.socialaccount.providers.kakao import views as kakao_views
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenRefreshView
+
+
 
 BASE_URL = "http://localhost:8000"
 KAKAO_CALLBACK_URI = "http://localhost:3000/logincallback/kakao"
@@ -86,7 +89,16 @@ class KakaoSocialLogin(SocialLoginView):
     adapter_class = kakao_views.KakaoOAuth2Adapter
     client_class = OAuth2Client
     callback_url = KAKAO_CALLBACK_URI
-        
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh = request.COOKIES.get('refresh')
+        if refresh is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        request.data['refresh'] = refresh
+        return super().post(request, *args, **kwargs) 
+           
 
 class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
