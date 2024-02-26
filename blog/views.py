@@ -4,11 +4,13 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import User
+from rest_framework.permissions import AllowAny
 
 
 class PostListAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [AllowAny]
     
     def get_queryset(self):
         address = self.kwargs.get('address')
