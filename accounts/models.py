@@ -14,5 +14,11 @@ class User(AbstractUser):
         null=True,
     )
 
+    profile_image = models.ImageField(
+        upload_to='profile_image',
+        blank=True,
+        null=True,
+    )
+
     def __str__(self):
         return self.username or "username is None"

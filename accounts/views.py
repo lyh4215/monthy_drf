@@ -106,3 +106,14 @@ class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+    
+
+class UserRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'address'
+    permission_classes = [AllowAny]
+
+    # def get_object(self):
+    #     address = self.kwargs.get('address')
+    #     return User.objects.get(address=address)
