@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
     'accounts.apps.AccountsConfig',
     'blog.apps.BlogConfig',
+    'django_cleanup.apps.CleanupConfig',
 
     'storages',
 
