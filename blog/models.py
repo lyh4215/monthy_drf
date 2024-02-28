@@ -12,7 +12,7 @@ class Post(models.Model):
     thumbContent = models.CharField(max_length=200, blank=True)
     body = models.TextField()
 
-    author = models.ForeignKey(User, on_delete=models.PROTECT)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=False)
