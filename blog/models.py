@@ -9,7 +9,7 @@ class Post(models.Model):
         LINE = 3, 'Line'
 
     thumbType = models.IntegerField(choices=ThumbnailType.choices, default=ThumbnailType.LINE)
-    thumbContent = models.CharField(max_length=100, blank=True)
+    thumbContent = models.CharField(max_length=200, blank=True)
     body = models.TextField()
 
     author = models.ForeignKey(User, on_delete=models.PROTECT)
