@@ -53,5 +53,5 @@ class PostImageDestroyAPIView(generics.DestroyAPIView):
     queryset = PostImage.objects.all()
 
     def get_object(self):
-        src = self.kwargs.get('src')
-        return PostImage.objects.get(image=src)
+        name = self.kwargs.get('name')
+        return PostImage.objects.get(src=f'images/{name}')
