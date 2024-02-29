@@ -36,23 +36,23 @@ def kakao_login_callback(request):
     if request.GET.get("error") is not None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    token_response = request_token(code)
-    if token_response.get('error') is not None:
+    kakao_token_response = request_token(code)
+    if kakao_token_response.get('error') is not None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    access_token = token_response.get('access_token')
+    kakao_access_token = kakao_token_response.get('access_token')
 
-    user_info_response = request_user_info(access_token)
+    user_info_response = request_user_info(kakao_access_token)
     if user_info_response.get('error') is not None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
     # kakao_account = user_info_response.get('kakao_account')
     # email = kakao_account.get('email')
 
-    data = { 'access_token': access_token, 'code': code }
+    data = { 'access_token': kakao_access_token, 'code': code }
     accept = requests.post(KAKAO_SOCIAL_LOGIN_URI, data=data)
-    accpet_status = accept.status_code
 
+    accpet_status = accept.status_code
     if accpet_status != 200:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
