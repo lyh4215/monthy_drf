@@ -12,8 +12,7 @@ from allauth.socialaccount.providers.kakao import views as kakao_views
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.views import TokenRefreshView
-
+from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 
 BASE_URL = "http://localhost:8000"
@@ -92,6 +91,14 @@ class KakaoSocialLogin(SocialLoginView):
 
 
 class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh = request.COOKIES.get('refresh')
+        if refresh is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        request.data['refresh'] = refresh
+        return super().post(request, *args, **kwargs) 
+    
+class CookieTokenBlacklistView(TokenBlacklistView):
     def post(self, request, *args, **kwargs):
         refresh = request.COOKIES.get('refresh')
         if refresh is None:
