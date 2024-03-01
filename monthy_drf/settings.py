@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -30,7 +33,7 @@ ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    os.environ.get('FRONTEND_URL'),
+    os.getenv('FRONTEND_URL'),
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -185,8 +188,8 @@ AUTHENTICATION_BACKENDS = [
 # SOCIALACCOUNT_PROVIDERS = {
 #   'kakao': {
 #     'APP': {
-#       'client_id': os.environ.get('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
-#       'secret': os.environ.get('SOCIAL_AUTH_KAKAO_SECRET'),
+#       'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
+#       'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
 #       'key': '',
 #     }
 #   }
@@ -219,9 +222,9 @@ STORAGES = {
     }
 }
 
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_S3_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_S3_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_S3_BUCKET_NAME')
+AWS_ACCESS_KEY_ID = os.getenv('AWS_S3_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_S3_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME')
 AWS_QUERYSTRING_AUTH = False
 AWS_S3_FILE_OVERWRITE = False
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'

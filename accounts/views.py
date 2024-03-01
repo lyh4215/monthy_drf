@@ -15,18 +15,18 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 
-BASE_URL = os.environ.get('BASE_URL')
-KAKAO_CALLBACK_URI = os.environ.get('SOCIAL_AUTH_KAKAO_CALLBACK_URI')
+BASE_URL = os.getenv('BASE_URL')
+KAKAO_CALLBACK_URI = os.getenv('SOCIAL_AUTH_KAKAO_CALLBACK_URI')
 KAKAO_SOCIAL_LOGIN_URI = BASE_URL + "/accounts/kakao/login/complete/"
 
 KAKAO_AUTHORIZE_API = "https://kauth.kakao.com/oauth/authorize"
 KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
 KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
+KAKAO_CLIENT_ID = os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID')
 
 
 def kakao_login(request):
-    client_id = os.environ.get('SOCIAL_AUTH_KAKAO_CLIENT_ID')
-    return redirect(f"{KAKAO_AUTHORIZE_API}?client_id={client_id}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code")
+    return redirect(f"{KAKAO_AUTHORIZE_API}?client_id={KAKAO_CLIENT_ID}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code")
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -67,7 +67,7 @@ def request_token(code):
     }
     data = {
       "grant_type": "authorization_code",
-      "client_id": os.environ.get('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
+      "client_id": KAKAO_CLIENT_ID,
       "redirect_uri": KAKAO_CALLBACK_URI,
       "code": code
     }
