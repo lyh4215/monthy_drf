@@ -29,8 +29,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    'http://monthly.react.bitter.s3-website-ap-southeast-2.amazonaws.com',
+    'localhost:3000',
+    os.environ.get('FRONTEND_URL'),
 ]
 
 CORS_ALLOW_CREDENTIALS = True

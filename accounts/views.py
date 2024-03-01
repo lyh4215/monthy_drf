@@ -15,8 +15,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 
-BASE_URL = "http://localhost:8000"
-KAKAO_CALLBACK_URI = "http://localhost:3000/logincallback/kakao"
+BASE_URL = os.environ.get('BASE_URL')
+KAKAO_CALLBACK_URI = os.environ.get('SOCIAL_AUTH_KAKAO_CALLBACK_URI')
 KAKAO_SOCIAL_LOGIN_URI = BASE_URL + "/accounts/kakao/login/complete/"
 
 KAKAO_AUTHORIZE_API = "https://kauth.kakao.com/oauth/authorize"
