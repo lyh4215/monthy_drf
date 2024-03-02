@@ -92,10 +92,10 @@ class KakaoSocialLogin(SocialLoginView):
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
-        refresh = request.COOKIES.get('refresh')
-        if refresh is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        request.data['refresh'] = refresh
+        # refresh = request.COOKIES.get('refresh')
+        # if refresh is None:
+        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        # request.data['refresh'] = refresh
         return super().post(request, *args, **kwargs) 
     
 class CookieTokenBlacklistView(TokenBlacklistView):
