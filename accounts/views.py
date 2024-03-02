@@ -58,7 +58,7 @@ def kakao_login_callback(request):
     accept_json = accept.json()
     accept_json.pop('user')
     response = Response({ 'access': accept_json.pop('access') }, status=status.HTTP_200_OK)
-    response.set_cookie('refresh', accept_json.pop('refresh'), httponly=True)
+    response.set_cookie('refresh', accept_json.pop('refresh'), max_age=(7*24*3600), httponly=True)
     return response
 
 def request_token(code):
