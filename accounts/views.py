@@ -13,7 +13,7 @@ from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
-
+from django.http import HttpResponse
 
 BASE_URL = os.getenv('BASE_URL')
 KAKAO_CALLBACK_URI = os.getenv('SOCIAL_AUTH_KAKAO_CALLBACK_URI')
@@ -57,7 +57,7 @@ def kakao_login_callback(request):
     
     accept_json = accept.json()
     accept_json.pop('user')
-    response = Response({ 'access': accept_json.pop('access') }, status=status.HTTP_200_OK)
+    response = HttpResponse({ 'access': accept_json.pop('access') }, status=status.HTTP_200_OK)
     response.set_cookie('refresh', accept_json.pop('refresh'), max_age=(7*24*3600), httponly=True)
     return response
 
