@@ -1,13 +1,13 @@
 from .serializers import PostSerializer, PostImageSerializer, PostCreateSerializer
-from .models import Post, PostImage
+from .models import Post, PostImage, UserKPI, Action
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import User
 from rest_framework.permissions import AllowAny
+from .mixin import ActivityLogMixin
 
-
-class PostListAPIView(generics.ListAPIView):
+class PostListAPIView(ActivityLogMixin, generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [AllowAny]
@@ -40,21 +40,20 @@ class PostListAPIView(generics.ListAPIView):
 
         return queryset.order_by('date')
 
-
-class PostCreateAPIView(generics.CreateAPIView):
+class PostCreateAPIView(ActivityLogMixin, generics.CreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateSerializer
 
 
-class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+class PostRetrieveUpdateDestroyAPIView(ActivityLogMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
 
-class PostImageCreateAPIView(generics.CreateAPIView):
+class PostImageCreateAPIView(ActivityLogMixin, generics.CreateAPIView):
     serializer_class = PostImageSerializer
 
-class PostImageDestroyAPIView(generics.DestroyAPIView):
+class PostImageDestroyAPIView(ActivityLogMixin, generics.DestroyAPIView):
     serializer_class = PostImageSerializer
     queryset = PostImage.objects.all()
 
