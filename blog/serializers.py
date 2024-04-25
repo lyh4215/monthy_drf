@@ -18,7 +18,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
     def validate_date(self, value):
         author = self.context['request'].user
         if Post.objects.filter(date=value, author=author).exists():
-            raise serializers.ValidationError('This date is already taken')
+            existingPost = Post.objects.get(date=value, author=author)
+            raise serializers.ValidationError(existingPost.pk)
         return value
 
     def create(self, validated_data):
