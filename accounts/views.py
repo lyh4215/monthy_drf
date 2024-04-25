@@ -23,71 +23,10 @@ KAKAO_TOKEN_API = "https://kauth.kakao.com/oauth/token"
 KAKAO_USER_API = "https://kapi.kakao.com/v2/user/me"
 KAKAO_CLIENT_ID = os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID')
 
-
-def kakao_login(request):
-    return redirect(f"{KAKAO_AUTHORIZE_API}?client_id={KAKAO_CLIENT_ID}&redirect_uri={KAKAO_CALLBACK_URI}&response_type=code")
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def kakao_login_callback(request):
-    code = request.GET.get("code")
-    if request.GET.get("error") is not None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    kakao_token_response = request_token(code)
-    if kakao_token_response.get('error') is not None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-    kakao_access_token = kakao_token_response.get('access_token')
-
-    user_info_response = request_user_info(kakao_access_token)
-    if user_info_response.get('error') is not None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-    # kakao_account = user_info_response.get('kakao_account')
-    # email = kakao_account.get('email')
-
-    data = { 'access_token': kakao_access_token, 'code': code }
-    accept = requests.post(KAKAO_SOCIAL_LOGIN_URI, data=data)
-
-    accpet_status = accept.status_code
-    if accpet_status != 200:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-    accept_json = accept.json()
-    accept_json.pop('user')
-    response = Response({ 'access': accept_json.pop('access') }, status=status.HTTP_200_OK)
-    response.set_cookie('refresh', accept_json.pop('refresh'), max_age=(7*24*3600), httponly=True, samesite=None, secure=True)
-    return response
-
-def request_token(code):
-    headers = {
-      "Content-Type": "application/x-www-form-urlencoded"
-    }
-    data = {
-      "grant_type": "authorization_code",
-      "client_id": KAKAO_CLIENT_ID,
-      "redirect_uri": KAKAO_CALLBACK_URI,
-      "code": code
-    }
-
-    token_response = requests.post(KAKAO_TOKEN_API, data=data, headers=headers).json()
-    return token_response
-
-def request_user_info(access_token):
-    headers = {
-      # "Content-Type": "application/x-www-form-urlencoded",
-      "Authorization": f"Bearer ${access_token}"
-    }
-    user_info_response = requests.get(KAKAO_USER_API, headers=headers).json()
-    return user_info_response       
-
-
 class KakaoSocialLogin(SocialLoginView): 
     adapter_class = kakao_views.KakaoOAuth2Adapter
     client_class = OAuth2Client
     callback_url = KAKAO_CALLBACK_URI
-
 
 class CookieTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
