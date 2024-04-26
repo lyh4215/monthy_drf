@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'https://monthy.co',
     os.getenv('FRONTEND_URL'),
 ]
 
