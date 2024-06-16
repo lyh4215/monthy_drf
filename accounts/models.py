@@ -20,5 +20,9 @@ class User(AbstractUser):
         null=True,
     )
 
+    enable_publish = models.BooleanField(
+        default=False,
+    )
+
     def __str__(self):
         return self.username or "username is None"
