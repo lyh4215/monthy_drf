@@ -21,8 +21,10 @@ class Post(models.Model):
     def __str__(self):
         if self.thumbType == Post.ThumbnailType.IMAGE:
             return f'{self.pk}] {self.author}({self.date}): [Image]'
+        elif self.thumbContent != '':
+            return f'{self.pk}] {self.author}({self.date}): [Text]'
         else:
-            return f'{self.pk}] {self.author}({self.date}): {self.thumbContent}'
+            return f'{self.pk}] {self.author}({self.date}): -'
 
 
 class PostImage(models.Model):
