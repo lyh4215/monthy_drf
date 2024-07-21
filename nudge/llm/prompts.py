@@ -51,7 +51,6 @@ As an expert psychologist, your task is to analyze and modify the user's persona
 ### Context:
 
 - **New Diary Entry:** {context}
-- **Author ID:** {author_id}
 - **Persona:** {persona}
 
 {format_instructions}
@@ -72,7 +71,6 @@ make_new_nudge_template = """
 
     ### Context
 
-    - **Author ID**: {author_id}
     - **Author's Persona**: {persona}
     - **Current Date and Time**: {today}
 

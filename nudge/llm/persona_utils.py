@@ -7,6 +7,7 @@ from models import Post, Persona
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 from accounts.models import User
+from blog.models import Post
 from sample_diary import sample_diary
 import prompts
 import os
@@ -21,8 +22,7 @@ def post_to_str(post_list : list) -> str:
         post_list_str += post_str
     return post_list_str
 
-def make_persona(author_id : int) -> str:
-    author = User.objects.get(id=author_id)
+def make_persona(author : User) -> str:
     post_list = Post.objects.filter(author=author).order_by('-created_at')
 
     #make the list of the user's diary -> str
@@ -43,7 +43,14 @@ def make_persona(author_id : int) -> str:
 #input : new diary
 #modify persona
 #output : depression rate
-def modify_persona(author_id : int) -> float:
+def modify_persona(post : Post) -> float:
+    if post.author.persona is None:
+        make_persona(post.author)
+    
+    author = post.author
+    #TODO : make this more specific
+    persona: str = author.persona.persona
+
     class NewDiary(BaseModel):
         persona: str = Field(description="persona")
         depression_rate: float = Field(description="depression rate")
@@ -56,15 +63,13 @@ def modify_persona(author_id : int) -> float:
         partial_variables={"format_instructions": format_instructions})
     chain = prompt | llm | parser
     
-    #TODO : make this more specific
-    user = User.objects.get(id = author_id)
-    persona: str = user.persona.persona
+    
 
-    output = chain.invoke({'context': sample_diary[0], 'author_id': author_id, 'persona': persona})
+    output = chain.invoke({'context': post.body, 'persona': persona})
 
     depression_rate = output.depression_rate
     persona = output.persona
-    user.persona.persona = persona
-    user.persona.save()
+    author.persona.persona = persona
+    author.persona.save()
 
     return depression_rate

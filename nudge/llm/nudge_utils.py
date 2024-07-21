@@ -39,7 +39,6 @@ def make_nudge(user_id : int):
         format_instructions = parser.get_format_instructions()
         prompt = PromptTemplate.from_template(template=template,
                                             partial_variables={'today': today,
-                                                               'author_id': author_id,
                                                                'persona': persona_str,
                                                                'language': 'korean',
                                                                'format_instructions': format_instructions},)

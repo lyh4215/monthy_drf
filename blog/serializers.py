@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Post, PostImage
 from accounts.models import User
+from nudge.llm.persona_utils import modify_persona
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -25,6 +26,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         address = self.context['request'].data['address']
         validated_data['author'] = User.objects.get(address=address)
+        modify_persona(validated_data['author'].id, validated_data)
         return super().create(validated_data)
     
 
