@@ -26,7 +26,7 @@ class PostCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         address = self.context['request'].data['address']
         validated_data['author'] = User.objects.get(address=address)
-        modify_persona(validated_data['author'].id, validated_data)
+        modify_persona(validated_data)
         return super().create(validated_data)
     
 
