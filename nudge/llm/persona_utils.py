@@ -4,11 +4,14 @@ load_dotenv(override=True)
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
 from models import Post, Persona
+from pydantic import BaseModel, Field
+from langchain.output_parsers import PydanticOutputParser
 from accounts.models import User
+from sample_diary import sample_diary
 import prompts
 import os
 
-llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'), model='gpt-3.5-turbo')
+from llm import llm
 
 #find user's persona
 def post_to_str(post_list : list) -> str: 
@@ -37,6 +40,31 @@ def make_persona(author_id : int) -> str:
 
     return persona_string
 
-def modify_persona(post_list : list) -> str:
-    post_list_str = post_to_str(post_list)
-    return post_list_str
+#input : new diary
+#modify persona
+#output : depression rate
+def modify_persona(author_id : int) -> float:
+    class NewDiary(BaseModel):
+        persona: str = Field(description="persona")
+        depression_rate: float = Field(description="depression rate")
+
+    template = prompts.modify_persona_template
+    parser = PydanticOutputParser(pydantic_object=NewDiary)
+    format_instructions = parser.get_format_instructions()
+    prompt = PromptTemplate.from_template(
+        template = template,
+        partial_variables={"format_instructions": format_instructions})
+    chain = prompt | llm | parser
+    
+    #TODO : make this more specific
+    user = User.objects.get(id = author_id)
+    persona: str = user.persona.persona
+
+    output = chain.invoke({'context': sample_diary[0], 'author_id': author_id, 'persona': persona})
+
+    depression_rate = output.depression_rate
+    persona = output.persona
+    user.persona.persona = persona
+    user.persona.save()
+
+    return depression_rate
