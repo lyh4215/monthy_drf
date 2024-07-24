@@ -13,16 +13,18 @@ def post_image_fk(apps, schema_editor):
         body_dict = json.loads(body)
         for page in body_dict['content']:
             if page['type'] == 'image':
-                url = page['attrs']['src'].replace('https://monthy-image-bucket.s3.amazonaws.com/', '')
-                obj = PostImage.objects.get(src=url)
-                obj.post = post
-                obj.save()
+                try:
+                    url = page['attrs']['src'].replace('https://monthy-image-bucket.s3.amazonaws.com/', '')
+                    obj = PostImage.objects.get(src=url)
+                    obj.post = post
+                    obj.save()
+                except:
+                    pass
 
 def reverse_post_image_fk(apps, schema_editor):
     PostImage = apps.get_model('blog', 'PostImage')
-    Post = apps.get_model('blog', 'Post')
     for post_image in PostImage.objects.all():
-        post_image.post = Post.objects.first()
+        post_image.post = None
         post_image.save()
 
 class Migration(migrations.Migration):
