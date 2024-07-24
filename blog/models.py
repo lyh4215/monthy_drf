@@ -1,4 +1,5 @@
 from accounts.models import User
+from django.db.models import UniqueConstraint
 from django.db import models
 
 
@@ -16,7 +17,11 @@ class Post(models.Model):
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=False)
-    
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['author', 'date'], name='unique_author_date')
+        ]
 
     def __str__(self):
         if self.thumbType == Post.ThumbnailType.IMAGE:
@@ -29,4 +34,4 @@ class Post(models.Model):
 
 class PostImage(models.Model):
     src = models.ImageField(upload_to='images/')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, default=1)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images', default=1)
