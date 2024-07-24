@@ -3,6 +3,7 @@ from django.db.models import UniqueConstraint
 from django.db import models
 
 
+
 class Post(models.Model):
     class ThumbnailType(models.IntegerChoices):
         IMAGE = 1, 'Image'
@@ -31,7 +32,16 @@ class Post(models.Model):
         else:
             return f'{self.pk}] {self.author}({self.date}): -'
 
-
+def image_upload_to(instance, filename):
+    return f'images/{instance.device_id}/{filename}'
+    
 class PostImage(models.Model):
-    src = models.ImageField(upload_to='images/')
+    src = models.ImageField(upload_to=image_upload_to)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    device_id = models.CharField(max_length=100) #UUID
+    index = models.IntegerField()
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['post', 'device_id', 'index'], name='unique_post_device_index')
+        ]
+    

@@ -1,10 +1,11 @@
-from .serializers import PostSerializer, PostImageSerializer, PostCreateSerializer
+from .serializers import PostSerializer, PostImageSerializer, PostCreateSerializer, PostWithImageSerializer
 from .models import Post, PostImage
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import User
 from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
 
 
 class PostListAPIView(generics.ListAPIView):
@@ -54,10 +55,30 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageSerializer
 
-class PostImageDestroyAPIView(generics.DestroyAPIView):
+class PostWithImageCreateAPIView(generics.CreateAPIView):
+    serializer_class = PostWithImageSerializer
+
+class PostImageRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
     serializer_class = PostImageSerializer
     queryset = PostImage.objects.all()
+    
 
     def get_object(self):
-        name = self.kwargs.get('name')
-        return PostImage.objects.get(src=f'images/{name}')
+        address = self.request.query_params.get('address')
+        date = self.request.query_params.get('date')
+        device_id = self.request.query_params.get('device_id')
+        index = self.request.query_params.get('index')
+        
+        if not all([address, date, device_id, index]):
+            return Response({'detail': 'Missing parameters'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(address=address)
+        except User.DoesNotExist:
+            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        partial_src = f'images/{user.username}/{date}/{device_id}/{index}'
+        post_image = get_object_or_404(PostImage, src__contains=partial_src)
+        
+        return post_image
+

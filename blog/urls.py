@@ -3,8 +3,8 @@ from django.urls import path
 
 urlpatterns = [
     path(r'posts/<str:address>/', views.PostListAPIView.as_view()),
-    path(r'post/', views.PostCreateAPIView.as_view()),
+    path(r'post/', views.PostWithImageCreateAPIView.as_view()),
     path(r'post/<int:pk>/', views.PostRetrieveUpdateDestroyAPIView.as_view()),
     path(r'uploadimage/', views.PostImageCreateAPIView.as_view()),
-    path(r'discardimage/<str:name>', views.PostImageDestroyAPIView.as_view()),
+    path(r'image/', views.PostImageRetrieveDestroyAPIView.as_view()),
 ]

@@ -33,3 +33,17 @@ class PostImageSerializer(serializers.ModelSerializer):
         model = PostImage
         fields = '__all__'
 
+class PostWithImageSerializer(serializers.Serializer):
+    post = PostSerializer()
+    images = PostImageSerializer(many=True)
+
+    def create(self, validated_data):
+        post_data = validated_data.pop('post')
+        images_data = validated_data.pop('images')
+        post = Post.objects.create(**post_data)
+        for image_data in images_data:
+            PostImage.objects.create(post=post, **image_data)
+        return {
+            'post': post,
+            'images': images_data
+        }
