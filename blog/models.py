@@ -33,8 +33,9 @@ class Post(models.Model):
             return f'{self.pk}] {self.author}({self.date}): -'
 
 def image_upload_to(instance, filename):
-    return f'images/{instance.device_id}/{filename}'
-    
+    #filename = {index}.{ext}
+    return f'images/{instance.post.author.username}/{instance.post.date}/{instance.device_id}/{filename}'
+
 class PostImage(models.Model):
     src = models.ImageField(upload_to=image_upload_to)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
