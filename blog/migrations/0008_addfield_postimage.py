@@ -16,6 +16,7 @@ def reverse_delete_null_post_images(apps, schema_editor):
     # 여기서는 삭제된 데이터를 복구할 수 없으므로 pass
     pass
 
+#set fixed uuid to postImage from anonymous device id
 def set_fixed_uuid(apps, schema_editor):
     PostImage = apps.get_model('blog', 'PostImage')
     fixed_uuid = uuid.UUID('123e4567-e89b-12d3-a456-426614174000')
@@ -29,6 +30,7 @@ def reverse_fixed_uuid(apps, schema_editor):
         post_image.device_id = uuid.uuid4()
         post_image.save()
 
+#initialize index to postImage
 def set_index(apps, schema_editor):
     PostImage = apps.get_model('blog', 'PostImage')
     Post = apps.get_model('blog', 'Post')
@@ -48,6 +50,7 @@ def move_postimages(apps, schema_editor):
     PostImage = apps.get_model('blog', 'PostImage')
     Post = apps.get_model('blog', 'Post')
     #Region NAME?
+    S3_URL = "https://monthy-image-bucket.s3.amazonaws.com/"
     s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
                       aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
@@ -61,14 +64,16 @@ def move_postimages(apps, schema_editor):
         s3.delete_object(Bucket=bucket_name, Key=old_path)
         post_image.src.name = new_path
         post_image.save()
+        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
         #body change
         post: Post = post_image.post
-        post.body = post.body.replace(old_path, new_path)
+        post.body = post.body.replace(S3_URL+old_path, local_new_path)
         post.save()
 
 def reverse_move_postimages(apps, schema_editor):
     PostImage = apps.get_model('blog', 'PostImage')
     Post = apps.get_model('blog', 'Post')
+    S3_URL = "https://monthy-image-bucket.s3.amazonaws.com/"
     s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
                       aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
@@ -84,7 +89,8 @@ def reverse_move_postimages(apps, schema_editor):
         post_image.save()
         #body change
         post: Post = post_image.post
-        post.body = post.body.replace(new_path, old_path)
+        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
+        post.body = post.body.replace(local_new_path, S3_URL+old_path)
         post.save()
 
 class Migration(migrations.Migration):

@@ -1,4 +1,9 @@
-from .serializers import PostSerializer, PostImageSerializer, PostCreateSerializer, PostWithImageSerializer
+from .serializers import (
+    PostSerializer,
+    PostImageSerializer,
+    PostCreateSerializer,
+    PostImageCreateSerializer
+)
 from .models import Post, PostImage
 from rest_framework import generics
 from rest_framework.response import Response
@@ -6,6 +11,7 @@ from rest_framework import status
 from accounts.models import User
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 
 class PostListAPIView(generics.ListAPIView):
@@ -53,10 +59,7 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PostImageCreateAPIView(generics.CreateAPIView):
-    serializer_class = PostImageSerializer
-
-class PostWithImageCreateAPIView(generics.CreateAPIView):
-    serializer_class = PostWithImageSerializer
+    serializer_class = PostImageCreateSerializer
 
 class PostImageRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
     serializer_class = PostImageSerializer
@@ -68,17 +71,17 @@ class PostImageRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
         date = self.request.query_params.get('date')
         device_id = self.request.query_params.get('device_id')
         index = self.request.query_params.get('index')
-        
         if not all([address, date, device_id, index]):
-            return Response({'detail': 'Missing parameters'}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError({
+                'error': '필수 매개변수가 누락되었습니다.',
+                'required_params': ['address', 'date', 'device_id', 'index']
+            })
         
         try:
             user = User.objects.get(address=address)
         except User.DoesNotExist:
-            return Response({'detail': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        
+            raise ValidationError({'error': 'not proper address'})
         partial_src = f'images/{user.username}/{date}/{device_id}/{index}'
         post_image = get_object_or_404(PostImage, src__contains=partial_src)
-        
         return post_image
 

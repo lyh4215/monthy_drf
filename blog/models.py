@@ -1,6 +1,8 @@
 from accounts.models import User
 from django.db.models import UniqueConstraint
 from django.db import models
+import uuid
+import os
 
 
 
@@ -33,13 +35,13 @@ class Post(models.Model):
             return f'{self.pk}] {self.author}({self.date}): -'
 
 def image_upload_to(instance, filename):
-    #filename = {index}.{ext}
-    return f'images/{instance.post.author.username}/{instance.post.date}/{instance.device_id}/{filename}'
+    ext = os.path.splitext(filename)[1]
+    return f'images/{instance.post.author.username}/{instance.post.date}/{instance.device_id}/{instance.index}{ext}'
 
 class PostImage(models.Model):
     src = models.ImageField(upload_to=image_upload_to)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
-    device_id = models.CharField(max_length=100) #UUID
+    device_id = models.UUIDField()  # UUID4
     index = models.IntegerField()
     class Meta:
         constraints = [

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Post, PostImage
 from accounts.models import User
+import uuid
+import base64
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -33,17 +35,31 @@ class PostImageSerializer(serializers.ModelSerializer):
         model = PostImage
         fields = '__all__'
 
-class PostWithImageSerializer(serializers.Serializer):
-    post = PostSerializer()
-    images = PostImageSerializer(many=True)
+
+class PostImageCreateSerializer(serializers.ModelSerializer):
+    date = serializers.DateField(source = 'post.date', write_only=True)
+    class Meta:
+        model = PostImage
+        fields = ['src', 'device_id', 'index', 'date', 'post']
+        read_only_fields = ['post']
+
+    def validate_date(self, value):
+        author = self.context['request'].user
+        if not Post.objects.filter(date=value, author=author).exists():
+            #TODO : add template (prepare about not expected disconnect)
+            Post.objects.create(date=value, author=author)
+        return value
+
+    def validate_device_id(self, value):
+        if not isinstance(value, uuid.UUID):
+            raise serializers.ValidationError("Invalid UUID")
+        return value
 
     def create(self, validated_data):
-        post_data = validated_data.pop('post')
-        images_data = validated_data.pop('images')
-        post = Post.objects.create(**post_data)
-        for image_data in images_data:
-            PostImage.objects.create(post=post, **image_data)
-        return {
-            'post': post,
-            'images': images_data
-        }
+        date = validated_data.pop('post').get('date')
+        author = self.context['request'].user
+        post = Post.objects.filter(date=date, author=author).first()
+        if not post:
+            raise serializers.ValidationError("Post does not exist")
+        validated_data['post'] = post
+        return super().create(validated_data)
