@@ -29,3 +29,4 @@ class Post(models.Model):
 
 class PostImage(models.Model):
     src = models.ImageField(upload_to='images/')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
