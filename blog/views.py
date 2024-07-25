@@ -61,10 +61,27 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageCreateSerializer
 
-class PostImageRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
+class PostImageDestroyAPIView(generics.DestroyAPIView):
     serializer_class = PostImageSerializer
     queryset = PostImage.objects.all()
     
+    def get_object(self):
+        author = self.request.user
+        date = self.request.query_params.get('date')
+        device_id = self.request.query_params.get('device_id')
+        index = self.request.query_params.get('index')
+        if not all([date, device_id, index]):
+            raise ValidationError({
+                'error': 'wrong params',
+                'required_params': ['date', 'device_id', 'index']
+            })
+        partial_src = f'images/{author.username}/{date}/{device_id}/{index}'
+        post_image = get_object_or_404(PostImage, src__contains=partial_src)
+        return post_image
+
+class PostImageRetrieveAPIView(generics.RetrieveAPIView):
+    serializer_class = PostImageSerializer
+    queryset = PostImage.objects.all()
 
     def get_object(self):
         address = self.request.query_params.get('address')
@@ -73,10 +90,9 @@ class PostImageRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
         index = self.request.query_params.get('index')
         if not all([address, date, device_id, index]):
             raise ValidationError({
-                'error': '필수 매개변수가 누락되었습니다.',
+                'error': 'wrong params',
                 'required_params': ['address', 'date', 'device_id', 'index']
             })
-        
         try:
             user = User.objects.get(address=address)
         except User.DoesNotExist:
