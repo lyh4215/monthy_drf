@@ -38,7 +38,7 @@ def image_upload_to(instance, filename):
 
 class PostImage(models.Model):
     src = models.ImageField(upload_to=image_upload_to)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     device_id = models.CharField(max_length=100) #UUID
     index = models.IntegerField()
     class Meta:
