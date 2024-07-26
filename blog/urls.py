@@ -7,6 +7,4 @@ urlpatterns = [
     path(r'post/', views.PostCreateAPIView.as_view()),
     path(r'post/<int:pk>/', views.PostRetrieveUpdateDestroyAPIView.as_view()),
     path(r'uploadimage/', views.PostImageCreateAPIView.as_view()),
-    path(r'discardimage/', views.PostImageDestroyAPIView.as_view()),
-    path(r'image/', views.PostImageRetrieveAPIView.as_view()),
 ]
