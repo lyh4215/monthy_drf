@@ -11,11 +11,16 @@ class Post(models.Model):
         IMAGE = 1, 'Image'
         HEADING = 2, 'Heading'
         LINE = 3, 'Line'
+    
+    class ExtraSpanType(models.IntegerChoices):
+        DEFAULT = 0, 'Default'
+        NARROW = -1, 'Narrow'
+        WIDE = 1, 'Wide'
 
     thumbType = models.IntegerField(choices=ThumbnailType.choices, default=ThumbnailType.LINE)
     thumbContent = models.CharField(max_length=200, blank=True)
     body = models.TextField()
-
+    extraSpan = models.IntegerField(choices=ExtraSpanType.choices, default=ExtraSpanType.DEFAULT)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
