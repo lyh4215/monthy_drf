@@ -75,7 +75,7 @@ class PostListWithImageLinkAPIView(generics.ListAPIView):
             for post_image in post.images.all():
                 local_image_link = get_local_image_link(post_image, author)
                 image_link = get_image_link(post_image, author)
-                modified_post.body = modified_post.body.replace(local_image_link, image_link)
+                modified_post.pages = modified_post.pages.replace(local_image_link, image_link)
             modified_posts.append(modified_post)
         
         # Serialize the modified posts
@@ -108,7 +108,7 @@ def updateDeletedImage(post: Post, author: User):
     post_images = post.images.all()
     for post_image in post_images:
         local_image_link = get_local_image_link(post_image, author)
-        if local_image_link not in post.body:
+        if local_image_link not in post.pages:
             post_image.delete()
 
 def get_local_image_link(post_image: PostImage, author : User):
