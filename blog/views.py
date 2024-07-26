@@ -93,11 +93,10 @@ class PostImageRetrieveAPIView(generics.RetrieveAPIView):
                 'error': 'wrong params',
                 'required_params': ['address', 'date', 'device_id', 'index']
             })
-        try:
-            user = User.objects.get(address=address)
-        except User.DoesNotExist:
-            raise ValidationError({'error': 'not proper address'})
-        partial_src = f'images/{user.username}/{date}/{device_id}/{index}'
+        user = get_object_or_404(User, address=address)
+        partial_src = get_partial_image_link(user, date, device_id, index)
         post_image = get_object_or_404(PostImage, src__contains=partial_src)
         return post_image
 
+def get_partial_image_link(author : User, date: str, device_id: str, index: str):
+    return f'images/{author.username}/{date}/{device_id}/{index}'
