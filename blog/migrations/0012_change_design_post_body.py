@@ -7,24 +7,27 @@ def change_body_str(body_str) -> str:
     body_dict = json.loads(body_str)
     new_body = []
     for paragraph in body_dict['content']: 
-        if paragraph['type'] == 'heading':
-            if paragraph['attrs']['level'] == 1:
-                continue
-            #else: if level is not img
-            new_dict = {'type': 'thumb_text', 'text': paragraph['content'][0]['text']}
-            new_body.append(new_dict)
-        elif paragraph['type'] == 'paragraph':
-            try:
-                for text in paragraph['content']:
-                    if text['type'] == 'text':
-                        new_dict = {'type': 'text', 'text': str(text['text'])}
-                        new_body.append(new_dict)
-            except:
-                pass
-        elif paragraph['type'] == 'image':
-            src = paragraph['attrs']['src']
-            new_dict = {'type': 'image', 'src': src}
-            new_body.append(new_dict)
+        try:
+            if paragraph['type'] == 'heading':
+                if paragraph['attrs']['level'] == 1:
+                    continue
+                #else: if level is not img
+                new_dict = {'type': 'thumb_text', 'text': paragraph['content'][0]['text']}
+                new_body.append(new_dict)
+            elif paragraph['type'] == 'paragraph':
+                try:
+                    for text in paragraph['content']:
+                        if text['type'] == 'text':
+                            new_dict = {'type': 'text', 'text': str(text['text'])}
+                            new_body.append(new_dict)
+                except:
+                    pass
+            elif paragraph['type'] == 'image':
+                src = paragraph['attrs']['src']
+                new_dict = {'type': 'image', 'src': src}
+                new_body.append(new_dict)
+        except:
+            pass
     new_body_json = json.dumps(new_body, ensure_ascii=False)
     return new_body_json
 
@@ -32,21 +35,24 @@ def reverse_change_body_str(body_str) -> str:
     body_dicts : list[dict]= json.loads(body_str)
     old_body = []
     for page in body_dicts:
-        if page['type'] == 'text':
-            paragraph_dict = {'type' : 'paragraph',
-                              'content': [{'type': 'text',
-                                           'text': page['text']}]}
-            old_body.append(paragraph_dict)
-        elif page['type'] == 'thumb_text':
-            heading_dict = {'type' : 'heading',
-                            'attrs': {'level': 2},
-                            'content': [{'type': 'text',
-                                         'text': page['text']}]}
-            old_body.append(heading_dict)
-        elif page['type'] == 'image':
-            image_dict = {'type' : 'image',
-                          'attrs': {'src': page['src']}}
-            old_body.append(image_dict)
+        try:
+            if page['type'] == 'text':
+                paragraph_dict = {'type' : 'paragraph',
+                                'content': [{'type': 'text',
+                                            'text': page['text']}]}
+                old_body.append(paragraph_dict)
+            elif page['type'] == 'thumb_text':
+                heading_dict = {'type' : 'heading',
+                                'attrs': {'level': 2},
+                                'content': [{'type': 'text',
+                                            'text': page['text']}]}
+                old_body.append(heading_dict)
+            elif page['type'] == 'image':
+                image_dict = {'type' : 'image',
+                            'attrs': {'src': page['src']}}
+                old_body.append(image_dict)
+        except:
+            pass
     old_dict = {'type' : 'doc',
                 'content' : old_body}
     old_body_json = json.dumps(old_dict, ensure_ascii=False)
