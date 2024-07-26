@@ -37,7 +37,7 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostImageCreateSerializer(serializers.ModelSerializer):
-    date = serializers.DateField(source = 'post.date', write_only=True)
+    date = serializers.DateField(write_only=True)
     class Meta:
         model = PostImage
         fields = ['src', 'device_id', 'name_hash', 'date', 'post']
@@ -56,7 +56,7 @@ class PostImageCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        date = validated_data.pop('post').get('date')
+        date = validated_data.pop('date')
         author = self.context['request'].user
         post = Post.objects.filter(date=date, author=author).first()
         if not post:
