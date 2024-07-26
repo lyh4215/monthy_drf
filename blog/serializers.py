@@ -40,7 +40,7 @@ class PostImageCreateSerializer(serializers.ModelSerializer):
     date = serializers.DateField(source = 'post.date', write_only=True)
     class Meta:
         model = PostImage
-        fields = ['src', 'device_id', 'index', 'date', 'post']
+        fields = ['src', 'device_id', 'name_hash', 'date', 'post']
         read_only_fields = ['post']
 
     def validate_date(self, value):
