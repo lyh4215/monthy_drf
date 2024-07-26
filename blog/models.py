@@ -12,7 +12,7 @@ class Post(models.Model):
         NARROW = -1, 'Narrow'
         WIDE = 1, 'Wide'
 
-    body = models.TextField()
+    pages = models.TextField()
     extraSpan = models.IntegerField(choices=ExtraSpanType.choices, default=ExtraSpanType.DEFAULT)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
