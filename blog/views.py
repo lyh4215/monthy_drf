@@ -103,6 +103,7 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageCreateSerializer
 
+
 def updateDeletedImage(post: Post, author: User):
     post_images = post.images.all()
     for post_image in post_images:
@@ -118,3 +119,4 @@ def get_image_link(post_image: PostImage, author : User):
     src = post_image.src.name
     base_url = settings.AWS_S3_CUSTOM_DOMAIN
     return f'https://{base_url}/{src}'
+
