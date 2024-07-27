@@ -20,6 +20,17 @@ def post_image_fk(apps, schema_editor):
                     obj.save()
                 except:
                     pass
+        thumbType = post.thumbType
+        if thumbType == 1: #image
+            try:
+                url = post.thumbContent.replace('https://monthy-image-bucket.s3.amazonaws.com/', '')
+                post.thumbContent = url
+                post.save()
+                obj = PostImage.objects.get(src=url)
+                obj.post = post
+                obj.save()
+            except:
+                pass
 
 def reverse_post_image_fk(apps, schema_editor):
     PostImage = apps.get_model('blog', 'PostImage')

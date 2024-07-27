@@ -3,31 +3,96 @@
 from django.db import migrations
 import json
 
+EMPTY_DICT = {'type': 'text', 'text': '\n'}
+
+def type_paragraph(paragraph, new_body : list, prefix = ''):
+    content = paragraph.get('content')
+    if content is None:
+        new_body.append(EMPTY_DICT)
+        return new_body
+    temp_text = ""
+    for text in content:
+        if text['type'] == 'text':
+            temp_text += str(text['text'])
+    if prefix == '':
+        new_dict = {'type': 'text', 'text': temp_text}
+    else:
+        new_dict = {'type': 'text', 'text': prefix + ' ' + temp_text}
+    new_body.append(new_dict)
+    return new_body
+
+def type_heading(heading, new_body : list):
+    content = heading.get('content')
+    if content is None:
+        new_body.append(EMPTY_DICT)
+        return new_body
+    temp_text = ""
+    for text in content:
+        if text['type'] == 'text':
+            temp_text += str(text['text'])
+    new_dict = {'type': 'text', 'text': temp_text}
+    new_body.append(new_dict)
+    return new_body
+
+def type_bullet_list(bullet_list, new_body : list, prefix = ''):
+    content = bullet_list.get('content')
+    if content is None:
+        new_body.append(EMPTY_DICT)
+        return new_body
+    for item in content:
+        if item['type'] == 'listItem':
+            _content = item.get('content')
+            if _content is None:
+                new_body.append(EMPTY_DICT)
+                continue
+            for page in _content:
+                if page['type'] == 'paragraph':
+                    new_body = type_paragraph(page, new_body, prefix + '- ')
+                elif page['type'] == 'bulletList':
+                    new_body = type_bullet_list(page, new_body, prefix + '  ')
+                elif page['type'] == 'orderedList':
+                    new_body = type_ordered_list(page, new_body, prefix + '  ')
+    return new_body
+
+def type_ordered_list(ordered_list, new_body : list, prefix = ''):
+    content = ordered_list.get('content')
+    attr = ordered_list.get('attrs')
+    start = int(attr['start'])
+    if content is None:
+        new_body.append(EMPTY_DICT)
+        return new_body
+    for item in content:
+        if item['type'] == 'listItem':
+            _content = item.get('content')
+            if _content is None:
+                new_body.append(EMPTY_DICT)
+                continue
+            for page in _content:
+                if page['type'] == 'paragraph':
+                    new_body = type_paragraph(page, new_body, prefix + str(start) + '. ')
+                elif page['type'] == 'orderedList':
+                    new_body = type_ordered_list(page, new_body, prefix + '   ')
+                elif page['type'] == 'bulletList':
+                    new_body = type_bullet_list(page, new_body, prefix + '   ')
+            start += 1
+    return new_body
+
 def change_body_str(body_str) -> str:
     body_dict = json.loads(body_str)
     new_body = []
-    for paragraph in body_dict['content']: 
-        try:
-            if paragraph['type'] == 'heading':
-                if paragraph['attrs']['level'] == 1:
-                    continue
-                #else: if level is not img
-                new_dict = {'type': 'thumb_text', 'text': paragraph['content'][0]['text']}
-                new_body.append(new_dict)
-            elif paragraph['type'] == 'paragraph':
-                try:
-                    for text in paragraph['content']:
-                        if text['type'] == 'text':
-                            new_dict = {'type': 'text', 'text': str(text['text'])}
-                            new_body.append(new_dict)
-                except:
-                    pass
-            elif paragraph['type'] == 'image':
-                src = paragraph['attrs']['src']
-                new_dict = {'type': 'image', 'src': src}
-                new_body.append(new_dict)
-        except:
-            pass
+    for page in body_dict['content']: 
+        if page['type'] == 'heading':
+            new_body = type_heading(page, new_body)
+        elif page['type'] == 'paragraph':
+            new_body = type_paragraph(page, new_body)
+        elif page['type'] == 'image':
+            src = page['attrs']['src']
+            new_dict = {'type': 'image', 'src': src}
+            new_body.append(new_dict)
+        elif page['type'] == 'bulletList':
+            new_body = type_bullet_list(page, new_body)
+        elif page['type'] == 'orderedList':
+            new_body = type_ordered_list(page, new_body)
     new_body_json = json.dumps(new_body, ensure_ascii=False)
     return new_body_json
 
@@ -35,24 +100,21 @@ def reverse_change_body_str(body_str) -> str:
     body_dicts : list[dict]= json.loads(body_str)
     old_body = []
     for page in body_dicts:
-        try:
-            if page['type'] == 'text':
-                paragraph_dict = {'type' : 'paragraph',
-                                'content': [{'type': 'text',
-                                            'text': page['text']}]}
-                old_body.append(paragraph_dict)
-            elif page['type'] == 'thumb_text':
-                heading_dict = {'type' : 'heading',
-                                'attrs': {'level': 2},
-                                'content': [{'type': 'text',
-                                            'text': page['text']}]}
-                old_body.append(heading_dict)
-            elif page['type'] == 'image':
-                image_dict = {'type' : 'image',
-                            'attrs': {'src': page['src']}}
-                old_body.append(image_dict)
-        except:
-            pass
+        if page['type'] == 'text':
+            paragraph_dict = {'type' : 'paragraph',
+                            'content': [{'type': 'text',
+                                        'text': page['text']}]}
+            old_body.append(paragraph_dict)
+        elif page['type'] == 'thumb_text':
+            heading_dict = {'type' : 'heading',
+                            'attrs': {'level': 2},
+                            'content': [{'type': 'text',
+                                        'text': page['text']}]}
+            old_body.append(heading_dict)
+        elif page['type'] == 'image':
+            image_dict = {'type' : 'image',
+                        'attrs': {'src': page['src']}}
+            old_body.append(image_dict)
     old_dict = {'type' : 'doc',
                 'content' : old_body}
     old_body_json = json.dumps(old_dict, ensure_ascii=False)
@@ -72,6 +134,48 @@ def reverse_change_design_post_body(apps, schema_editor):
         post.body = reverse_change_body_str(post.body)
         post.save()
 
+def change_thumb_to_body(apps, schema_editor) -> str:
+    Post = apps.get_model('blog', 'Post')
+    posts = Post.objects.all()
+    for post in posts:
+        post_body = json.loads(post.body)
+        if post.thumbType == 1:
+            src = post.thumbContent
+            new_dict = {'type': 'image', 'src': src}
+            post_body.insert(0, new_dict)
+        elif post.thumbType == 2 or post.thumbType == 3:
+            text = post.thumbContent
+            new_dict = {'type': 'text', 'text': text}
+            post_body.insert(0, new_dict)
+        post_body_str = json.dumps(post_body, ensure_ascii=False)
+        post.body = post_body_str
+        post.save()
+
+def reverse_change_thumb_to_body(apps, schema_editor):
+    Post = apps.get_model('blog', 'Post')
+    posts = Post.objects.all()
+    for post in posts:
+        post_body = json.loads(post.body)
+        if post_body[0]['type'] == 'image' and post.thumbType == 1:
+            post_body.pop(0)
+        elif post_body[0]['type'] == 'text' and (post.thumbType == 2 or post.thumbType == 3):
+            post_body.pop(0)
+        post_body_str = json.dumps(post_body, ensure_ascii=False)
+        post.body = post_body_str
+        post.save()
+
+
+
+    for post in posts:
+        thumb_dict = json.loads(post.thumb)
+        new_body = []
+    for page in thumb_dict['content']:
+        if page['type'] == 'paragraph':
+            new_body = type_paragraph(page, new_body)
+    new_body_json = json.dumps(new_body, ensure_ascii=False)
+    return new_body_json
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -80,4 +184,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(change_design_post_body, reverse_change_design_post_body),
+        migrations.RunPython(change_thumb_to_body, reverse_change_thumb_to_body),
     ]
