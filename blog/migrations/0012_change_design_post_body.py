@@ -105,12 +105,8 @@ def reverse_change_body_str(body_str) -> str:
                             'content': [{'type': 'text',
                                         'text': page['text']}]}
             old_body.append(paragraph_dict)
-        elif page['type'] == 'thumb_text':
-            heading_dict = {'type' : 'heading',
-                            'attrs': {'level': 2},
-                            'content': [{'type': 'text',
-                                        'text': page['text']}]}
-            old_body.append(heading_dict)
+        elif page['type'] == 'text_thumb':
+            pass
         elif page['type'] == 'image':
             image_dict = {'type' : 'image',
                         'attrs': {'src': page['src']}}
@@ -145,7 +141,7 @@ def change_thumb_to_body(apps, schema_editor) -> str:
             post_body.insert(0, new_dict)
         elif post.thumbType == 2 or post.thumbType == 3:
             text = post.thumbContent
-            new_dict = {'type': 'text', 'text': text}
+            new_dict = {'type': 'text_thumb', 'text': text}
             post_body.insert(0, new_dict)
         post_body_str = json.dumps(post_body, ensure_ascii=False)
         post.body = post_body_str
@@ -158,22 +154,11 @@ def reverse_change_thumb_to_body(apps, schema_editor):
         post_body = json.loads(post.body)
         if post_body[0]['type'] == 'image' and post.thumbType == 1:
             post_body.pop(0)
-        elif post_body[0]['type'] == 'text' and (post.thumbType == 2 or post.thumbType == 3):
+        elif post_body[0]['type'] == 'text_thumb' and (post.thumbType == 2 or post.thumbType == 3):
             post_body.pop(0)
         post_body_str = json.dumps(post_body, ensure_ascii=False)
         post.body = post_body_str
         post.save()
-
-
-
-    for post in posts:
-        thumb_dict = json.loads(post.thumb)
-        new_body = []
-    for page in thumb_dict['content']:
-        if page['type'] == 'paragraph':
-            new_body = type_paragraph(page, new_body)
-    new_body_json = json.dumps(new_body, ensure_ascii=False)
-    return new_body_json
 
 
 class Migration(migrations.Migration):
