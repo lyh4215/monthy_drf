@@ -1,5 +1,9 @@
 from accounts.models import User
+from django.db.models import UniqueConstraint
 from django.db import models
+import uuid
+import os
+
 
 
 class Post(models.Model):
@@ -16,7 +20,11 @@ class Post(models.Model):
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     published = models.BooleanField(default=False)
-    
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['author', 'date'], name='unique_author_date')
+        ]
 
     def __str__(self):
         if self.thumbType == Post.ThumbnailType.IMAGE:
@@ -26,6 +34,17 @@ class Post(models.Model):
         else:
             return f'{self.pk}] {self.author}({self.date}): -'
 
+def image_upload_to(instance, filename):
+    ext = os.path.splitext(filename)[1]
+    return f'images/{instance.post.author.username}/{instance.post.date}/{instance.device_id}/{instance.name_hash}{ext}'
 
 class PostImage(models.Model):
-    src = models.ImageField(upload_to='images/')
+    src = models.ImageField(upload_to=image_upload_to)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name='images')
+    device_id = models.UUIDField()  # UUID4
+    name_hash = models.CharField(max_length=100)
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['post', 'device_id', 'name_hash'], name='unique_post_device_name_hash')
+        ]
+    
