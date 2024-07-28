@@ -64,7 +64,14 @@ def move_postimages(apps, schema_editor):
         s3.delete_object(Bucket=bucket_name, Key=old_path)
         post_image.src.name = new_path
         post_image.save()
+
+        #thumbContent change
+        if post_image.post.thumbType == 1:
+            if post_image.post.thumbContent == old_path:
+                post_image.post.thumbContent = new_path
+                post_image.post.save()
         local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
+        
         #body change
         post: Post = post_image.post
         post.body = post.body.replace(S3_URL+old_path, local_new_path)
@@ -87,6 +94,13 @@ def reverse_move_postimages(apps, schema_editor):
         s3.delete_object(Bucket=bucket_name, Key=new_path)
         post_image.src.name = old_path
         post_image.save()
+
+        #thumbContent change
+        if post_image.post.thumbType == 1:
+            if post_image.post.thumbContent == new_path:
+                post_image.post.thumbContent = old_path
+                post_image.post.save()
+
         #body change
         post: Post = post_image.post
         local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'

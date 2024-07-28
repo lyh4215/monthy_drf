@@ -7,15 +7,13 @@ import os
 
 
 class Post(models.Model):
-    class ThumbnailType(models.IntegerChoices):
-        IMAGE = 1, 'Image'
-        HEADING = 2, 'Heading'
-        LINE = 3, 'Line'
+    class ExtraSpanType(models.IntegerChoices):
+        DEFAULT = 0, 'Default'
+        NARROW = -1, 'Narrow'
+        WIDE = 1, 'Wide'
 
-    thumbType = models.IntegerField(choices=ThumbnailType.choices, default=ThumbnailType.LINE)
-    thumbContent = models.CharField(max_length=200, blank=True)
-    body = models.TextField()
-
+    pages = models.TextField()
+    extraSpan = models.IntegerField(choices=ExtraSpanType.choices, default=ExtraSpanType.DEFAULT)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -27,12 +25,7 @@ class Post(models.Model):
         ]
 
     def __str__(self):
-        if self.thumbType == Post.ThumbnailType.IMAGE:
-            return f'{self.pk}] {self.author}({self.date}): [Image]'
-        elif self.thumbContent != '':
-            return f'{self.pk}] {self.author}({self.date}): [Text]'
-        else:
-            return f'{self.pk}] {self.author}({self.date}): -'
+        return f'{self.pk}] {self.author}({self.date})'
 
 def image_upload_to(instance, filename):
     ext = os.path.splitext(filename)[1]
