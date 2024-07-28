@@ -3,16 +3,15 @@ load_dotenv(override=True)
 
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
-from models import Post, Persona
+from blog.models import Post
+from nudge.models import Persona
 from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 from accounts.models import User
-from blog.models import Post
-from sample_diary import sample_diary
-import prompts
+import nudge.llm.prompts as prompts
 import os
 
-from llm import llm
+from nudge.llm import llm
 
 #find user's persona
 def post_to_str(post_list : list) -> str: 
