@@ -93,6 +93,9 @@ def change_body_str(body_str) -> str:
             new_body = type_bullet_list(page, new_body)
         elif page['type'] == 'orderedList':
             new_body = type_ordered_list(page, new_body)
+        else: 
+            type = page['type']
+            raise Exception(f'unexpected content type: {type}')
     new_body_json = json.dumps(new_body, ensure_ascii=False)
     return new_body_json
 
