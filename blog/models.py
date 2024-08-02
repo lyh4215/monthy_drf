@@ -1,6 +1,12 @@
 from accounts.models import User
 from django.db.models import UniqueConstraint
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.utils import timezone
 from django.db import models
+import uuid
+import os
+
 import uuid
 import os
 
@@ -17,6 +23,7 @@ class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     published = models.BooleanField(default=False)
 
     class Meta:
@@ -41,3 +48,19 @@ class PostImage(models.Model):
             UniqueConstraint(fields=['post', 'device_id', 'name_hash'], name='unique_post_device_name_hash')
         ]
     
+class PostUpdatedAt(models.Model):
+    updated_at = models.DateTimeField(auto_now_add = True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    month = models.IntegerField()
+
+
+@receiver([post_save, post_delete], sender=Post)
+def update_post_updated_at_on_post_change(sender, instance, **kwargs):
+    month, created = PostUpdatedAt.objects.get_or_create(
+        author=instance.author,
+        year=instance.date.year,
+        month=instance.date.month
+    )
+    month.updated_at = timezone.now()
+    month.save()
