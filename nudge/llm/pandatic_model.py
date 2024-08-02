@@ -6,6 +6,7 @@ class Nudge(BaseModel):
     when: datetime = Field(description="when to do")
     title: str = Field(description="title of the nudge")
     to_do: str = Field(description="the action to be taken")
+    iconItem: str = Field(description="icon item representing the nudge")
 
     def __str__(self):
         return f"{self.when} | {self.title} | {self.to_do}"
