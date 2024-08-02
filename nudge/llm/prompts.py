@@ -9,6 +9,8 @@ make_persona_template = '''
     - **Motivations (i.e., Goals)**: Why the user engages in certain activities
     - **Skills**: The user's capabilities related to their activities and experiences
     You may introduce new variables if necessary. 
+    - do not state persona in dictionarie types. state in String type.
+    - you have to try to include entire information in context.
 
     Please note:
     - You do not need to explain your reasoning.
@@ -44,6 +46,8 @@ As an expert psychologist, your task is to analyze and modify the user's persona
    - You may introduce new variables if necessary.
    - No need to explain the reasons for your modifications.
    - be careful not to delete original persona information.
+   - do not state persona in dictionarie types. state in String type.
+   - you have to try to include entire information in context.
 
 2. **Determine Depression Rate:**
    - Assess the user's depression rate on a scale of 0 to 1.

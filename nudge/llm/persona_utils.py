@@ -9,6 +9,8 @@ from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 from accounts.models import User
 import nudge.llm.prompts as prompts
+
+from django.core.exceptions import ObjectDoesNotExist
 import os
 
 from nudge.llm import llm
@@ -22,8 +24,11 @@ class NewDiary(BaseModel):
 #modify persona
 #output : depression rate
 def modify_persona(post : Post) -> float:
-    if post.author.persona is None:
+    try:
+        persona = post.author.persona
+    except ObjectDoesNotExist:
         make_persona(post.author)
+        persona = post.author.persona
     
     author = post.author
     #TODO : make this more specific
@@ -37,9 +42,10 @@ def modify_persona(post : Post) -> float:
         partial_variables={"format_instructions": format_instructions})
     chain = prompt | llm | parser
     
-    output = chain.invoke({'context': post.body, 'persona': persona})
+    output = chain.invoke({'context': post.pages, 'persona': persona})
 
     depression_rate = output.depression_rate
+    print(depression_rate)
     persona = output.persona
     author.persona.persona = persona
     author.persona.save()
@@ -60,7 +66,7 @@ def make_persona(author : User) -> str:
     chain = prompt | llm
     output = chain.invoke({})
     persona_string: str = output.content
-    persona = Persona.objects.create(user = author, persona = persona_string)
+    persona = Persona.objects.create(author = author, persona = persona_string)
     persona.save()
 
     return persona_string
@@ -68,6 +74,6 @@ def make_persona(author : User) -> str:
 def post_to_str(post_list : list) -> str: 
     post_list_str = ""
     for post in post_list:
-        post_str = f"{post.created_at} | {post.body} \n"
+        post_str = f"Date : {post.date} | Written at : {post.created_at} | Content : {post.pages} \n"
         post_list_str += post_str
     return post_list_str
