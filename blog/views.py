@@ -2,9 +2,11 @@ from .serializers import (
     PostSerializer,
     PostImageSerializer,
     PostCreateSerializer,
-    PostImageCreateSerializer
+    PostImageCreateSerializer,
+    PostUpdatedAtSerializer,
+
 )
-from .models import Post, PostImage
+from .models import Post, PostImage, PostUpdatedAt
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,10 +15,8 @@ from rest_framework.permissions import AllowAny
 from .permissions import IsAuthor
 
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 
 from django.conf import settings
-
 
 class PostListAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
@@ -99,10 +99,25 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         updateDeletedImage(instance, request.user)
         return response
 
-
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageCreateSerializer
 
+class PostUpdatedAtAPIView(generics.RetrieveAPIView):
+    queryset = PostUpdatedAt.objects.all()
+    serializer_class = PostUpdatedAtSerializer
+    permission_classes = [IsAuthor]
+
+    def get_object(self):
+        month = self.kwargs.get('month')
+        year = self.kwargs.get('year')
+        user = self.request.user
+        queryset = self.get_queryset().filter(author=user, month = month, year = year)
+        obj, created = PostUpdatedAt.objects.get_or_create(
+            author=user,
+            month = month,
+            year = year,
+        )
+        return obj
 
 def updateDeletedImage(post: Post, author: User):
     post_images = post.images.all()
