@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, PostImage
+from .models import Post, PostImage, PostUpdatedAt
 from accounts.models import User
 import uuid
 import base64
@@ -10,6 +10,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+        read_only_fields = ['created_at', 'updated_at', 'author']
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
@@ -65,3 +66,9 @@ class PostImageCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Post does not exist")
         validated_data['post'] = post
         return super().create(validated_data)
+    
+class PostUpdatedAtSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostUpdatedAt
+        fields = '__all__'
+        read_only_fields = ['author', 'updated_at']
