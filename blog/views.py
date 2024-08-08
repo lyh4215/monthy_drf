@@ -15,7 +15,8 @@ from rest_framework.permissions import AllowAny
 from .permissions import IsAuthor
 
 from django.shortcuts import get_object_or_404
-
+from nudge.llm.persona_utils import modify_persona, get_nudge_necessity
+from nudge.llm.nudge_utils import make_nudge
 from django.conf import settings
 
 class PostListAPIView(generics.ListAPIView):
@@ -88,6 +89,26 @@ class PostCreateAPIView(generics.CreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        post: Post= serializer.instance
+        self.nudge_necessity = get_nudge_necessity(post)
+
+        response_data = serializer.data
+        response_data['nudge_necessity'] = self.nudge_necessity
+        
+        #TODO : Celery 설정
+        modify_persona(post)
+        if self.nudge_necessity:
+            make_nudge(post.author)
+
+        headers = self.get_success_headers(serializer.data)
+        response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+        return response
+
 class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
@@ -95,8 +116,15 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
-        instance: Post = self.get_object()
-        updateDeletedImage(instance, request.user)
+        post: Post = self.get_object()
+        #post에 존재하지 않고, db상에만 존재하는 image 삭제
+        updateDeletedImage(post, request.user)
+
+        self.nudge_necessity = get_nudge_necessity(post)
+        response.data['nudge_necessity'] = self.nudge_necessity
+        modify_persona(post)
+        if self.nudge_necessity:
+            make_nudge(post.author)
         return response
 
 class PostImageCreateAPIView(generics.CreateAPIView):

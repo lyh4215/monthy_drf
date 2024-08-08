@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     'accounts.apps.AccountsConfig',
     'blog.apps.BlogConfig',
+    'nudge.apps.NudgeConfig',
     'django_cleanup.apps.CleanupConfig',
 
     'storages',

@@ -4,13 +4,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.db import models
-import uuid
 import os
-
-import uuid
-import os
-
-
 
 class Post(models.Model):
     class ExtraSpanType(models.IntegerChoices):
