@@ -3,7 +3,6 @@ from .models import Post, PostImage, PostUpdatedAt
 from accounts.models import User
 import uuid
 import base64
-from nudge.llm.persona_utils import modify_persona
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -27,9 +26,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        address = self.context['request'].data['address']
-        validated_data['author'] = User.objects.get(address=address)
-        modify_persona(validated_data)
+        user = self.context['request'].user
+        validated_data['author'] = user
         return super().create(validated_data)
     
 

@@ -16,9 +16,33 @@ import os
 from nudge.llm import llm
 
 
-class NewDiary(BaseModel):
+class Persona(BaseModel):
     persona: str = Field(description="persona")
+
+class DepressionRate(BaseModel):
     depression_rate: float = Field(description="depression rate")
+
+def get_depression_rate(post : Post) -> float:
+    try:
+        persona = post.author.persona.persona
+    except ObjectDoesNotExist:
+        persona = 'no persona'
+    author = post.author
+    #TODO : make this more specific
+    persona: str = persona
+
+    template = prompts.depression_rate_template
+    parser = PydanticOutputParser(pydantic_object=DepressionRate)
+    format_instructions = parser.get_format_instructions()
+    prompt = PromptTemplate.from_template(
+        template = template,
+        partial_variables={"format_instructions": format_instructions})
+    chain = prompt | llm | parser
+    
+    output = chain.invoke({'context': post.pages, 'persona': persona})
+
+    depression_rate = output.depression_rate
+    return depression_rate
 
 #input : new diary
 #modify persona
@@ -32,10 +56,10 @@ def modify_persona(post : Post) -> float:
     
     author = post.author
     #TODO : make this more specific
-    persona: str = author.persona.persona
+    persona: str = persona.persona
 
     template = prompts.modify_persona_template
-    parser = PydanticOutputParser(pydantic_object=NewDiary)
+    parser = PydanticOutputParser(pydantic_object=Persona)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(
         template = template,
@@ -44,13 +68,11 @@ def modify_persona(post : Post) -> float:
     
     output = chain.invoke({'context': post.pages, 'persona': persona})
 
-    depression_rate = output.depression_rate
-    print(depression_rate)
     persona = output.persona
     author.persona.persona = persona
     author.persona.save()
 
-    return depression_rate
+    return persona
 
 #initial user's persona
 def make_persona(author : User) -> str:

@@ -15,7 +15,7 @@ from rest_framework.permissions import AllowAny
 from .permissions import IsAuthor
 
 from django.shortcuts import get_object_or_404
-
+from nudge.llm.persona_utils import modify_persona, get_depression_rate
 from django.conf import settings
 
 class PostListAPIView(generics.ListAPIView):
@@ -87,6 +87,22 @@ class PostListWithImageLinkAPIView(generics.ListAPIView):
 class PostCreateAPIView(generics.CreateAPIView):
     queryset = Post.objects.all()
     serializer_class = PostCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        post: Post= serializer.instance
+        self.depression_rate = get_depression_rate(post)
+
+        response_data = serializer.data
+        response_data['depression_rate'] = self.depression_rate
+        
+        headers = self.get_success_headers(serializer.data)
+        response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+        modify_persona(post)
+        return response
 
 class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()

@@ -28,13 +28,13 @@ make_persona_template = '''
     '''
 
 modify_persona_template = """
-### Expert Psychologist Analysis for User Personality and Depression Rate
+### Expert Psychologist Analysis for User Personality
 
-As an expert psychologist, your task is to analyze and modify the user's persona based on their diary entries and determine their depression rate. Follow the detailed instructions below to ensure accurate and insightful results.
+As an expert psychologist, your task is to analyze and modify the user's persona based on their diary entries. Follow the detailed instructions below to ensure accurate and insightful results.
 
 ### Instructions:
 
-1. **Modify Persona:**
+**Modify Persona:**
    - Update the user's persona database by considering the new diary entries.
    - Apply more weight to recent diary entries.
    - Use the following behavior variables to guide your modifications:
@@ -49,12 +49,28 @@ As an expert psychologist, your task is to analyze and modify the user's persona
    - do not state persona in dictionarie types. state in String type.
    - you have to try to include entire information in context.
 
-2. **Determine Depression Rate:**
-   - Assess the user's depression rate on a scale of 0 to 1.
 
 ### Context:
 
 - **New Diary Entry:** {context}
+- **Persona:** {persona}
+
+{format_instructions}
+"""
+
+depression_rate_template = """
+### Expert Psychologist Analysis for User Personality and Depression Rate
+
+As an expert psychologist, your task is to analyze the author's depression rate based on author's diary entry and persona. Follow the detailed instructions below to ensure accurate and insightful results.
+
+### Instructions:
+**Determine Depression Rate:**
+   - Assess the author's depression rate on a scale of 0 to 1.
+   - No need to explain the reasons for your modifications.
+    
+### Context:
+
+- **Diary Entry:** {context}
 - **Persona:** {persona}
 
 {format_instructions}
