@@ -3,13 +3,13 @@ from datetime import datetime
 from typing import List
 
 class Nudge(BaseModel):
-    when: datetime = Field(description="when to do")
+    date: datetime = Field(description="when to do")
     title: str = Field(description="title of the nudge")
-    to_do: str = Field(description="the action to be taken")
+    page : str = Field(description="the action to be taken")
     iconItem: str = Field(description="icon item representing the nudge")
 
     def __str__(self):
-        return f"{self.when} | {self.title} | {self.to_do}"
+        return f"{self.date} | {self.title} | {self.page}"
 class NudgeList(BaseModel):
     nudges: List[Nudge] = Field(description="the list of the nudge")
 

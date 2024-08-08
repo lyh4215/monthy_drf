@@ -97,7 +97,7 @@ nudge_review_template = """
     You are an expert planner. Your task is to determine if the following nudge is feasible. Consider factors such as the user's balance, weather, GPS, etc. You may use tools to provide a proper answer.
 
     ### Nudge Details:
-    - **When**: {nudge.when}
-    - **To Do**: {nudge.to_do}
+    - **When**: {nudge.date}
+    - **To Do**: {nudge.page}
 
     """

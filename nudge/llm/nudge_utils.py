@@ -11,8 +11,9 @@ from typing_extensions import TypedDict
 from datetime import datetime
 from accounts.models import User
 
-from pandatic_model import Nudge, NudgeList
-import prompts
+from nudge.llm.pandatic_model import Nudge, NudgeList
+from nudge.llm import prompts
+from nudge import models as nudge_models
 
 from nudge.llm import llm, llm_with_tools, tools
 
@@ -23,9 +24,8 @@ class State(TypedDict):
     user: User
     current_nudge_index: int
     output_nudges: NudgeList
-        
-#### make nudge
 
+#make nudge graph
 def make_nudge(user_id : int):
     workflow = StateGraph(State)
     tool_node = ToolNode(tools)
@@ -44,15 +44,25 @@ def make_nudge(user_id : int):
     workflow.set_entry_point("make_nudge")
 
     nudge_app = workflow.compile()
-    from print_graph import png
-    png(workflow)
+    #from nudge.llm.print_graph import png
+    #png(nudge_app)
 
     user = User.objects.get(id=user_id)
-    result = nudge_app.invoke({'messages': [], 'user' : user, 'current_nudge_index': 0})
+    result = nudge_app.invoke({'messages': [], 'user' : user,
+                               'current_nudge_index': 0,
+                               'output_nudges': NudgeList(nudges=[])})
+    output_nudges : NudgeList = result['output_nudges']
+    for nudge in output_nudges.nudges:
+        nudge_models.Nudge.objects.create(author=user,
+                                         title=nudge.title,
+                                         page=nudge.page,
+                                         iconItem=nudge.iconItem,
+                                         date = nudge.date,
+                                         )
+    return output_nudges
 
-    print(result['output_nudges'])
-    return result['output_nudges']
 
+#NODES
 def make_new_nudge(state):
     template = prompts.make_new_nudge_template
     today = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
@@ -81,6 +91,7 @@ def nudge_reviewer(state):
     human_message = HumanMessage(content = template.format(nudge=nudge))
     state["messages"] = add_messages(state["messages"], human_message)
     result = llm_with_tools.invoke(state["messages"])
+
     # We convert the agent output into a format that is suitable to append to the global state
     
     if isinstance(result, ToolMessage):
@@ -88,9 +99,9 @@ def nudge_reviewer(state):
     else:
         result = AIMessage(**result.dict(exclude={"type"}))
     return {
-        "messages": [result],
-        "output_nudges": state["output_nudges"].nudges.append(nudge)
+        "messages": [human_message, result],
     }
+
 def nudge_reviewer_end(state):
     current_nudge_index = state['current_nudge_index']
     len_nudges = len(state['nudges'])
@@ -107,6 +118,7 @@ def nudge_reviewer_end(state):
     return {'messages' : [AIMessage(content = message.format(diff = diff))],
             'current_nudge_index': current_nudge_index +1,
             "output_nudges": output_nudges}
+
 def route_nudge(state) -> Literal['nudge_reviewer', '__end__']:
     if state['current_nudge_index'] < len(state['nudges']):
         return "review_more"
