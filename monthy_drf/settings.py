@@ -85,7 +85,7 @@ REST_FRAMEWORK = {
     ),
       'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'rest_framework.authentication.SessionAuthentication',
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'accounts.authorization.JWTXAuthentication',
     ),
 }
 
@@ -187,15 +187,15 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# SOCIALACCOUNT_PROVIDERS = {
-#   'kakao': {
-#     'APP': {
-#       'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
-#       'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
-#       'key': '',
-#     }
-#   }
-# }
+SOCIALACCOUNT_PROVIDERS = {
+  'kakao': {
+    'APP': {
+      'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
+      'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
+      'key': '',
+    }
+  }
+}
 
 REST_AUTH = {
   "TOKEN_MODEL": None,

@@ -130,6 +130,15 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageCreateSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({
+            'date': self.kwargs['date'],
+            'name_hash': self.kwargs['name_hash'],
+            'device_id': self.kwargs['device_id'],
+        })
+        return context
+
 class PostUpdatedAtAPIView(generics.RetrieveAPIView):
     queryset = PostUpdatedAt.objects.all()
     serializer_class = PostUpdatedAtSerializer
