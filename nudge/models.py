@@ -21,7 +21,7 @@ class Nudge(models.Model):
     title = models.CharField(max_length=500)
     page = models.TextField()
     iconItem = models.CharField(max_length=100)
-    date = models.DateField()
+    date = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=Status.choices, default=Status.PENDING)
     #published = models.BooleanField(default=False)
