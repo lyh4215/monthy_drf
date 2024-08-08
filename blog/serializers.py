@@ -38,11 +38,10 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostImageCreateSerializer(serializers.ModelSerializer):
-    date = serializers.DateField(write_only=True)
     class Meta:
         model = PostImage
-        fields = ['src', 'device_id', 'name_hash', 'date', 'post']
-        read_only_fields = ['post']
+        fields = ['src', 'post', 'name_hash', 'device_id']
+        read_only_fields = ['post', 'name_hash', 'device_id']
 
     def validate_date(self, value):
         author = self.context['request'].user
@@ -57,12 +56,16 @@ class PostImageCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        date = validated_data.pop('date')
+        date = self.context['date']
+        name_hash = self.context['name_hash']
+        device_id = self.context['device_id']
         author = self.context['request'].user
         post = Post.objects.filter(date=date, author=author).first()
         if not post:
             raise serializers.ValidationError("Post does not exist")
         validated_data['post'] = post
+        validated_data['name_hash'] = name_hash
+        validated_data['device_id'] = device_id
         return super().create(validated_data)
     
 class PostUpdatedAtSerializer(serializers.ModelSerializer):
