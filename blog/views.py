@@ -100,11 +100,13 @@ class PostCreateAPIView(generics.CreateAPIView):
         response_data = serializer.data
         response_data['nudge_necessity'] = self.nudge_necessity
         
-        headers = self.get_success_headers(serializer.data)
-        response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+        #TODO : Celery 설정
         modify_persona(post)
         if self.nudge_necessity:
             make_nudge(post.author)
+
+        headers = self.get_success_headers(serializer.data)
+        response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
         return response
 
 class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -114,8 +116,15 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
-        instance: Post = self.get_object()
-        updateDeletedImage(instance, request.user)
+        post: Post = self.get_object()
+        #post에 존재하지 않고, db상에만 존재하는 image 삭제
+        updateDeletedImage(post, request.user)
+
+        self.nudge_necessity = get_nudge_necessity(post)
+        response.data['nudge_necessity'] = self.nudge_necessity
+        modify_persona(post)
+        if self.nudge_necessity:
+            make_nudge(post.author)
         return response
 
 class PostImageCreateAPIView(generics.CreateAPIView):
