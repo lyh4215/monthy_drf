@@ -22,7 +22,7 @@ class Persona(BaseModel):
 class DepressionRate(BaseModel):
     depression_rate: float = Field(description="depression rate")
 
-def get_depression_rate(post : Post) -> float:
+def get_nudge_necessity(post : Post) -> bool:
     try:
         persona = post.author.persona.persona
     except ObjectDoesNotExist:
@@ -42,12 +42,15 @@ def get_depression_rate(post : Post) -> float:
     output = chain.invoke({'context': post.pages, 'persona': persona})
 
     depression_rate = output.depression_rate
-    return depression_rate
+    if depression_rate > 0.5:
+        return True
+    else:
+        return False
 
 #input : new diary
 #modify persona
 #output : depression rate
-def modify_persona(post : Post) -> float:
+def modify_persona(post : Post) -> str:
     try:
         persona = post.author.persona
     except ObjectDoesNotExist:
