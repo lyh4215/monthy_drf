@@ -26,7 +26,7 @@ class State(TypedDict):
     output_nudges: NudgeList
 
 #make nudge graph
-def make_nudge(user_id : int):
+def make_nudge(user : User):
     workflow = StateGraph(State)
     tool_node = ToolNode(tools)
 
@@ -47,7 +47,6 @@ def make_nudge(user_id : int):
     #from nudge.llm.print_graph import png
     #png(nudge_app)
 
-    user = User.objects.get(id=user_id)
     result = nudge_app.invoke({'messages': [], 'user' : user,
                                'current_nudge_index': 0,
                                'output_nudges': NudgeList(nudges=[])})

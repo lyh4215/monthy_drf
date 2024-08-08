@@ -15,7 +15,8 @@ from rest_framework.permissions import AllowAny
 from .permissions import IsAuthor
 
 from django.shortcuts import get_object_or_404
-from nudge.llm.persona_utils import modify_persona, get_depression_rate
+from nudge.llm.persona_utils import modify_persona, get_nudge_necessity
+from nudge.llm.nudge_utils import make_nudge
 from django.conf import settings
 
 class PostListAPIView(generics.ListAPIView):
@@ -94,14 +95,16 @@ class PostCreateAPIView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         post: Post= serializer.instance
-        self.depression_rate = get_depression_rate(post)
+        self.nudge_necessity = get_nudge_necessity(post)
 
         response_data = serializer.data
-        response_data['depression_rate'] = self.depression_rate
+        response_data['nudge_necessity'] = self.nudge_necessity
         
         headers = self.get_success_headers(serializer.data)
         response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
         modify_persona(post)
+        if self.nudge_necessity:
+            make_nudge(post.author)
         return response
 
 class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
