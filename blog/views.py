@@ -139,22 +139,15 @@ class PostImageCreateAPIView(generics.CreateAPIView):
         })
         return context
 
-class PostUpdatedAtAPIView(generics.RetrieveAPIView):
+class PostUpdatedAtListAPIView(generics.ListAPIView):
     queryset = PostUpdatedAt.objects.all()
     serializer_class = PostUpdatedAtSerializer
     permission_classes = [IsAuthor]
 
-    def get_object(self):
-        month = self.kwargs.get('month')
-        year = self.kwargs.get('year')
+    def get_queryset(self):
         user = self.request.user
-        queryset = self.get_queryset().filter(author=user, month = month, year = year)
-        obj, created = PostUpdatedAt.objects.get_or_create(
-            author=user,
-            month = month,
-            year = year,
-        )
-        return obj
+        queryset = super().get_queryset().filter(author=user)
+        return queryset.order_by('year', 'month')
 
 def updateDeletedImage(post: Post, author: User):
     post_images = post.images.all()
