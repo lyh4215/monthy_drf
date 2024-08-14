@@ -21,14 +21,24 @@ class PostCreateSerializer(serializers.ModelSerializer):
     def validate_date(self, value):
         author = self.context['request'].user
         if Post.objects.filter(date=value, author=author).exists():
-            existingPost = Post.objects.get(date=value, author=author)
-            raise serializers.ValidationError(existingPost.pk)
+            existing_post = Post.objects.get(date=value, author=author)
+            self.context['existing_post'] = existing_post
         return value
 
     def create(self, validated_data):
         user = self.context['request'].user
-        validated_data['author'] = user
-        return super().create(validated_data)
+        existing_post = self.context.get('existing_post')
+        
+        if existing_post:
+            #PATCH
+            for attr, value in validated_data.items():
+                setattr(existing_post, attr, value)
+            existing_post.save()
+            return existing_post
+        else:
+            #CREATE
+            validated_data['author'] = user
+            return super().create(validated_data)
     
 
 class PostImageSerializer(serializers.ModelSerializer):
