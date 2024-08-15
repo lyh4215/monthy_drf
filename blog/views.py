@@ -95,6 +95,8 @@ class PostCreateAPIView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         post: Post= serializer.instance
+        #post에 존재하지 않고, db상에만 존재하는 image 삭제
+        updateDeletedImage(post, request.user)
         self.nudge_necessity = get_nudge_necessity(post)
 
         response_data = serializer.data
