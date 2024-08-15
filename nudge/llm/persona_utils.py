@@ -16,7 +16,7 @@ import os
 from nudge.llm import llm
 
 
-class Persona(BaseModel):
+class PantaticPersona(BaseModel):
     persona: str = Field(description="persona")
 
 class DepressionRate(BaseModel):
@@ -25,7 +25,7 @@ class DepressionRate(BaseModel):
 def get_nudge_necessity(post : Post) -> bool:
     try:
         persona = post.author.persona.persona
-    except ObjectDoesNotExist:
+    except:
         persona = 'no persona'
     author = post.author
     #TODO : make this more specific
@@ -53,7 +53,7 @@ def get_nudge_necessity(post : Post) -> bool:
 def modify_persona(post : Post) -> str:
     try:
         persona = post.author.persona
-    except ObjectDoesNotExist:
+    except:
         make_persona(post.author)
         persona = post.author.persona
     
@@ -62,7 +62,7 @@ def modify_persona(post : Post) -> str:
     persona: str = persona.persona
 
     template = prompts.modify_persona_template
-    parser = PydanticOutputParser(pydantic_object=Persona)
+    parser = PydanticOutputParser(pydantic_object=PantaticPersona)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(
         template = template,
@@ -83,7 +83,6 @@ def make_persona(author : User) -> str:
 
     #make the list of the user's diary -> str
     post_list_str = post_to_str(post_list)
-    print(post_list_str)
     template = prompts.make_persona_template
     prompt = PromptTemplate.from_template(template = template,
                                         partial_variables={'context': post_list_str},)
