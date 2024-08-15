@@ -18,6 +18,7 @@ from django.shortcuts import get_object_or_404
 from nudge.llm.persona_utils import get_nudge_necessity
 from .tasks import task_modify_persona, task_make_nudge
 from django.conf import settings
+from celery import chain
 
 class PostListAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
@@ -101,9 +102,13 @@ class PostCreateAPIView(generics.CreateAPIView):
         response_data['nudge_necessity'] = self.nudge_necessity
         
         #TODO : Celery 설정
-        task_modify_persona.delay(post.id)
         if self.nudge_necessity:
-            task_make_nudge.delay(post.author.id)
+            chain(
+                task_modify_persona.s(post.id),
+                task_make_nudge.s(post.author.id)
+            ).apply_async()
+        else:
+            task_modify_persona.delay(post.id)
 
         headers = self.get_success_headers(serializer.data)
         response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
