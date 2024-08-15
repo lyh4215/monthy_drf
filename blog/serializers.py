@@ -91,5 +91,5 @@ class PostImageCreateSerializer(serializers.ModelSerializer):
 class PostUpdatedAtSerializer(serializers.ModelSerializer):
     class Meta:
         model = PostUpdatedAt
-        fields = '__all__'
-        read_only_fields = ['author', 'updated_at']
+        fields = ['updated_at', 'year', 'month']
+        read_only_fields = ['updated_at', 'year', 'month']
