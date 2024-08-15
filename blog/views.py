@@ -96,6 +96,8 @@ class PostCreateAPIView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         post: Post= serializer.instance
+        #post에 존재하지 않고, db상에만 존재하는 image 삭제
+        updateDeletedImage(post, request.user)
         self.nudge_necessity = get_nudge_necessity(post)
 
         response_data = serializer.data
@@ -144,22 +146,15 @@ class PostImageCreateAPIView(generics.CreateAPIView):
         })
         return context
 
-class PostUpdatedAtAPIView(generics.RetrieveAPIView):
+class PostUpdatedAtListAPIView(generics.ListAPIView):
     queryset = PostUpdatedAt.objects.all()
     serializer_class = PostUpdatedAtSerializer
     permission_classes = [IsAuthor]
 
-    def get_object(self):
-        month = self.kwargs.get('month')
-        year = self.kwargs.get('year')
+    def get_queryset(self):
         user = self.request.user
-        queryset = self.get_queryset().filter(author=user, month = month, year = year)
-        obj, created = PostUpdatedAt.objects.get_or_create(
-            author=user,
-            month = month,
-            year = year,
-        )
-        return obj
+        queryset = super().get_queryset().filter(author=user)
+        return queryset.order_by('year', 'month')
 
 def updateDeletedImage(post: Post, author: User):
     post_images = post.images.all()
