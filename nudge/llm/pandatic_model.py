@@ -24,3 +24,6 @@ class PandaticPersona(BaseModel):
 
 class PandaticDepressionRate(BaseModel):
     depression_rate: float = Field(description="depression rate")
+
+class PandaticNudgeNecessity(BaseModel):
+    nudge_necessity: bool = Field(description="nudge necessity")
