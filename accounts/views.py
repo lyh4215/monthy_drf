@@ -34,7 +34,7 @@ class KakaoSocialLogin(SocialLoginView):
 class AppleSocialLogin(SocialLoginView): 
     adapter_class = apple_views.AppleOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = APPLE_CALLBACK_URI
+    #callback_url = APPLE_CALLBACK_URI
 
 class UserRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
