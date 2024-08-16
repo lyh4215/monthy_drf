@@ -51,10 +51,10 @@ class PostUpdatedAt(models.Model):
 
 @receiver([post_save, post_delete], sender=Post)
 def update_post_updated_at_on_post_change(sender, instance, **kwargs):
-    month, created = PostUpdatedAt.objects.get_or_create(
+    post_updated_at, created = PostUpdatedAt.objects.get_or_create(
         author=instance.author,
         year=instance.date.year,
         month=instance.date.month
     )
-    month.updated_at = timezone.now()
-    month.save()
+    post_updated_at.updated_at = timezone.now()
+    post_updated_at.save()
