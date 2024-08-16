@@ -2,25 +2,15 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 from langchain.prompts import PromptTemplate
-from langchain_openai import OpenAI
 from blog.models import Post
 from nudge.models import Persona
-from pydantic import BaseModel, Field
 from langchain.output_parsers import PydanticOutputParser
 from accounts.models import User
 import nudge.llm.prompts as prompts
+from nudge.llm.pandatic_model import PandaticPersona, PandaticDepressionRate
 
-from django.core.exceptions import ObjectDoesNotExist
-import os
 
 from nudge.llm import llm
-
-
-class PantaticPersona(BaseModel):
-    persona: str = Field(description="persona")
-
-class DepressionRate(BaseModel):
-    depression_rate: float = Field(description="depression rate")
 
 def get_nudge_necessity(post : Post) -> bool:
     try:
@@ -32,7 +22,7 @@ def get_nudge_necessity(post : Post) -> bool:
     persona: str = persona
 
     template = prompts.depression_rate_template
-    parser = PydanticOutputParser(pydantic_object=DepressionRate)
+    parser = PydanticOutputParser(pydantic_object=PandaticDepressionRate)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(
         template = template,
@@ -62,7 +52,7 @@ def modify_persona(post : Post) -> str:
     persona: str = persona.persona
 
     template = prompts.modify_persona_template
-    parser = PydanticOutputParser(pydantic_object=PantaticPersona)
+    parser = PydanticOutputParser(pydantic_object=PandaticPersona)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(
         template = template,
