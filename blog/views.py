@@ -8,16 +8,17 @@ from .serializers import (
 )
 from .models import Post, PostImage, PostUpdatedAt
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import User
 from rest_framework.permissions import AllowAny
 from .permissions import IsAuthor
-
 from django.shortcuts import get_object_or_404
-from nudge.llm.persona_utils import modify_persona, get_nudge_necessity
-from nudge.llm.nudge_utils import make_nudge
+from nudge.llm.persona_utils import get_nudge_necessity
+from .tasks import task_modify_persona, task_make_nudge
 from django.conf import settings
+from celery import chain
 
 class PostListAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
@@ -103,9 +104,13 @@ class PostCreateAPIView(generics.CreateAPIView):
         response_data['nudge_necessity'] = self.nudge_necessity
         
         #TODO : Celery 설정
-        modify_persona(post)
         if self.nudge_necessity:
-            make_nudge(post.author)
+            chain(
+                task_modify_persona.s(post.id),
+                task_make_nudge.s(post.author.id)
+            ).apply_async()
+        else:
+            task_modify_persona.delay(post.id)
 
         headers = self.get_success_headers(serializer.data)
         response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
@@ -124,9 +129,9 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
         self.nudge_necessity = get_nudge_necessity(post)
         response.data['nudge_necessity'] = self.nudge_necessity
-        modify_persona(post)
+        task_modify_persona.delay(post.id)
         if self.nudge_necessity:
-            make_nudge(post.author)
+            task_make_nudge.delay(post.author.id)
         return response
 
 class PostImageCreateAPIView(generics.CreateAPIView):
