@@ -116,23 +116,10 @@ class PostCreateAPIView(generics.CreateAPIView):
         response = Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
         return response
 
-class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+class PostRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthor]
-
-    def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
-        post: Post = self.get_object()
-        #post에 존재하지 않고, db상에만 존재하는 image 삭제
-        updateDeletedImage(post, request.user)
-
-        self.nudge_necessity = get_nudge_necessity(post)
-        response.data['nudge_necessity'] = self.nudge_necessity
-        task_modify_persona.delay(post.id)
-        if self.nudge_necessity:
-            task_make_nudge.delay(post.author.id)
-        return response
 
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageCreateSerializer
