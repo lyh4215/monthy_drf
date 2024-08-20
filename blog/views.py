@@ -121,6 +121,11 @@ class PostRetrieveDestroyAPIView(generics.RetrieveDestroyAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthor]
 
+    def get_object(self):
+        date = self.kwargs['date']
+        author = self.request.user
+        return get_object_or_404(Post, date=date, author=author)
+
 class PostImageCreateAPIView(generics.CreateAPIView):
     serializer_class = PostImageCreateSerializer
 
