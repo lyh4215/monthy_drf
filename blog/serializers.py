@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, PostImage
+from .models import Post, PostImage, PostUpdatedAt
 from accounts.models import User
 import uuid
 import base64
@@ -8,7 +8,8 @@ import base64
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['date', 'extraSpan', 'published', 'created_at', 'updated_at', 'author', 'pages']
+        read_only_fields = ['created_at', 'updated_at', 'author']
 
 
 class PostCreateSerializer(serializers.ModelSerializer):
@@ -20,14 +21,24 @@ class PostCreateSerializer(serializers.ModelSerializer):
     def validate_date(self, value):
         author = self.context['request'].user
         if Post.objects.filter(date=value, author=author).exists():
-            existingPost = Post.objects.get(date=value, author=author)
-            raise serializers.ValidationError(existingPost.pk)
+            existing_post = Post.objects.get(date=value, author=author)
+            self.context['existing_post'] = existing_post
         return value
 
     def create(self, validated_data):
-        address = self.context['request'].data['address']
-        validated_data['author'] = User.objects.get(address=address)
-        return super().create(validated_data)
+        user = self.context['request'].user
+        existing_post = self.context.get('existing_post')
+        
+        if existing_post:
+            #PATCH
+            for attr, value in validated_data.items():
+                setattr(existing_post, attr, value)
+            existing_post.save()
+            return existing_post
+        else:
+            #CREATE
+            validated_data['author'] = user
+            return super().create(validated_data)
     
 
 class PostImageSerializer(serializers.ModelSerializer):
@@ -37,29 +48,48 @@ class PostImageSerializer(serializers.ModelSerializer):
 
 
 class PostImageCreateSerializer(serializers.ModelSerializer):
-    date = serializers.DateField(write_only=True)
     class Meta:
         model = PostImage
-        fields = ['src', 'device_id', 'name_hash', 'date', 'post']
-        read_only_fields = ['post']
+        fields = ['src', 'post', 'name_hash', 'device_id']
+        read_only_fields = ['post', 'name_hash', 'device_id']
 
-    def validate_date(self, value):
+    def validate(self, data):
+        date = self.context.get('date')
+        name_hash = self.context.get('name_hash')
+        device_id = self.context.get('device_id')
         author = self.context['request'].user
-        if not Post.objects.filter(date=value, author=author).exists():
-            #TODO : add template (prepare about not expected disconnect)
-            Post.objects.create(date=value, author=author)
-        return value
 
-    def validate_device_id(self, value):
-        if not isinstance(value, uuid.UUID):
-            raise serializers.ValidationError("Invalid UUID")
-        return value
+        if not Post.objects.filter(date=date, author=author).exists():
+            #TODO : add template (prepare about not expected disconnect)
+            Post.objects.create(date=date, author=author)
+
+        try:
+            device_id = uuid.UUID(device_id)
+        except ValueError:
+            raise serializers.ValidationError({"device_id": "Invalid UUID format"})
+        self.context['device_id'] = device_id
+        
+        if not name_hash:
+            raise serializers.ValidationError({"name_hash": "Name hash is required"})
+        
+        return data
+    
 
     def create(self, validated_data):
-        date = validated_data.pop('date')
+        date = self.context['date']
+        name_hash = self.context['name_hash']
+        device_id = self.context['device_id']
         author = self.context['request'].user
         post = Post.objects.filter(date=date, author=author).first()
         if not post:
             raise serializers.ValidationError("Post does not exist")
         validated_data['post'] = post
+        validated_data['name_hash'] = name_hash
+        validated_data['device_id'] = device_id
         return super().create(validated_data)
+    
+class PostUpdatedAtSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostUpdatedAt
+        fields = ['updated_at', 'year', 'month']
+        read_only_fields = ['updated_at', 'year', 'month']

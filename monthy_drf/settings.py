@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
 
@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
     'accounts.apps.AccountsConfig',
     'blog.apps.BlogConfig',
+    'nudge.apps.NudgeConfig',
     'django_cleanup.apps.CleanupConfig',
 
     'storages',
@@ -68,6 +69,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.apple',
 
     'corsheaders',
 ]
@@ -84,7 +86,7 @@ REST_FRAMEWORK = {
     ),
       'DEFAULT_AUTHENTICATION_CLASSES': (
         # 'rest_framework.authentication.SessionAuthentication',
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+        'accounts.authorization.JWTXAuthentication',
     ),
 }
 
@@ -186,15 +188,34 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# SOCIALACCOUNT_PROVIDERS = {
-#   'kakao': {
-#     'APP': {
-#       'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
-#       'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
-#       'key': '',
-#     }
-#   }
-# }
+SOCIALACCOUNT_PROVIDERS = {
+  'kakao': {
+    'APP': {
+      'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
+      'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
+      'key': '',
+    }
+  },
+  "apple": {
+    "APPS": [{
+            # Your service identifier.
+            "client_id": os.getenv('SOCIAL_AUTH_APPLE_CLIENT_ID'),
+
+            # The Key ID (visible in the "View Key Details" page).
+            "secret": os.getenv('SOCIAL_AUTH_APPLE_SECRET'),
+
+             # Member ID/App ID Prefix -- you can find it below your name
+             # at the top right corner of the page, or it’s your App ID
+             # Prefix in your App ID.
+            "key": os.getenv('SOCIAL_AUTH_APPLE_KEY'),
+
+            "settings": {
+                # The certificate you downloaded when generating the key.
+                "certificate_key": os.getenv('SOCIAL_AUTH_APPLE_CERTIFICATE_KEY'),
+            }
+        }]
+    }
+}
 
 REST_AUTH = {
   "TOKEN_MODEL": None,
@@ -236,3 +257,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Celery Settings
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'

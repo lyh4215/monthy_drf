@@ -1,24 +1,23 @@
 from accounts.models import User
 from django.db.models import UniqueConstraint
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.utils import timezone
 from django.db import models
-import uuid
 import os
 
-
-
 class Post(models.Model):
-    class ThumbnailType(models.IntegerChoices):
-        IMAGE = 1, 'Image'
-        HEADING = 2, 'Heading'
-        LINE = 3, 'Line'
+    class ExtraSpanType(models.IntegerChoices):
+        DEFAULT = 0, 'Default'
+        NARROW = -1, 'Narrow'
+        WIDE = 1, 'Wide'
 
-    thumbType = models.IntegerField(choices=ThumbnailType.choices, default=ThumbnailType.LINE)
-    thumbContent = models.CharField(max_length=200, blank=True)
-    body = models.TextField()
-
+    pages = models.TextField()
+    extraSpan = models.IntegerField(choices=ExtraSpanType.choices, default=ExtraSpanType.DEFAULT)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     published = models.BooleanField(default=False)
 
     class Meta:
@@ -27,12 +26,7 @@ class Post(models.Model):
         ]
 
     def __str__(self):
-        if self.thumbType == Post.ThumbnailType.IMAGE:
-            return f'{self.pk}] {self.author}({self.date}): [Image]'
-        elif self.thumbContent != '':
-            return f'{self.pk}] {self.author}({self.date}): [Text]'
-        else:
-            return f'{self.pk}] {self.author}({self.date}): -'
+        return f'{self.pk}] {self.author}({self.date})'
 
 def image_upload_to(instance, filename):
     ext = os.path.splitext(filename)[1]
@@ -48,3 +42,19 @@ class PostImage(models.Model):
             UniqueConstraint(fields=['post', 'device_id', 'name_hash'], name='unique_post_device_name_hash')
         ]
     
+class PostUpdatedAt(models.Model):
+    updated_at = models.DateTimeField(auto_now_add = True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    month = models.IntegerField()
+
+
+@receiver([post_save, post_delete], sender=Post)
+def update_post_updated_at_on_post_change(sender, instance, **kwargs):
+    post_updated_at, created = PostUpdatedAt.objects.get_or_create(
+        author=instance.author,
+        year=instance.date.year,
+        month=instance.date.month
+    )
+    post_updated_at.updated_at = timezone.now()
+    post_updated_at.save()

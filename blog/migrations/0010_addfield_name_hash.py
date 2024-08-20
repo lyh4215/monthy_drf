@@ -30,6 +30,12 @@ def move_postimages_with_hash(apps, schema_editor):
         s3.delete_object(Bucket=bucket_name, Key=old_path)
         post_image.src.name = new_path
         post_image.save()
+        #thumbContent change
+        if post_image.post.thumbType == 1:
+            if post_image.post.thumbContent == old_path:
+                post_image.post.thumbContent = new_path
+                post_image.post.save()
+
         local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.name_hash}{ext}'
         local_old_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
         #body change
@@ -54,6 +60,11 @@ def reverse_move_postimages_with_hash(apps, schema_editor):
         s3.delete_object(Bucket=bucket_name, Key=new_path)
         post_image.src.name = old_path
         post_image.save()
+        #thumbContent change
+        if post_image.post.thumbType == 1:
+            if post_image.post.thumbContent == new_path:
+                post_image.post.thumbContent = old_path
+                post_image.post.save()
         #body change
         post: Post = post_image.post
         local_old_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
