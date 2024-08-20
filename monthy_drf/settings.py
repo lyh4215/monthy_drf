@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
+ALLOWED_HOSTS = ['34.64.209.29', '.pythonanywhere.com', 'localhost']
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -186,15 +186,15 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# SOCIALACCOUNT_PROVIDERS = {
-#   'kakao': {
-#     'APP': {
-#       'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
-#       'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
-#       'key': '',
-#     }
-#   }
-# }
+SOCIALACCOUNT_PROVIDERS = {
+  'kakao': {
+    'APP': {
+      'client_id': os.getenv('SOCIAL_AUTH_KAKAO_CLIENT_ID'),
+      'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
+      'key': '',
+    }
+  }
+}
 
 REST_AUTH = {
   "TOKEN_MODEL": None,
