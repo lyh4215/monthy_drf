@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 
 urlpatterns = [
     path(r'kakao/login/complete/', views.KakaoSocialLogin.as_view(), name='kakao_login_complete'),
+    path(r'apple/login/complete/', views.AppleSocialLogin.as_view(), name='apple_login_complete'),
     path(r'token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path(r'logout/', TokenBlacklistView.as_view(), name='logout'),
     path(r'me/', views.UserRetrieveUpdateAPIView.as_view(), name='me'),
