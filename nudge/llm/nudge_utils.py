@@ -11,7 +11,7 @@ from typing_extensions import TypedDict
 from datetime import datetime
 from accounts.models import User
 
-from nudge.llm.pandatic_model import Nudge, NudgeList
+from nudge.llm.pandatic_model import PandaticNudge, PandaticNudgeList
 from nudge.llm import prompts
 from nudge import models as nudge_models
 
@@ -20,10 +20,10 @@ from nudge.llm import llm, llm_with_tools, tools
 
 class State(TypedDict):
     messages: Annotated[list, add_messages]
-    nudges: NudgeList
+    nudges: PandaticNudgeList
     user: User
     current_nudge_index: int
-    output_nudges: NudgeList
+    output_nudges: PandaticNudgeList
 
 #make nudge graph
 def make_nudge(user : User):
@@ -49,8 +49,8 @@ def make_nudge(user : User):
 
     result = nudge_app.invoke({'messages': [], 'user' : user,
                                'current_nudge_index': 0,
-                               'output_nudges': NudgeList(nudges=[])})
-    output_nudges : NudgeList = result['output_nudges']
+                               'output_nudges': PandaticNudgeList(nudges=[])})
+    output_nudges : PandaticNudgeList = result['output_nudges']
     for nudge in output_nudges.nudges:
         nudge_models.Nudge.objects.create(author=user,
                                          title=nudge.title,
@@ -69,7 +69,7 @@ def make_new_nudge(state):
     author_id = user.id
     persona = user.persona
     persona_str = persona.persona
-    parser = PydanticOutputParser(pydantic_object=NudgeList)
+    parser = PydanticOutputParser(pydantic_object=PandaticNudgeList)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(template=template,
                                         partial_variables={'today': today,
@@ -78,14 +78,14 @@ def make_new_nudge(state):
                                                             'format_instructions': format_instructions},)
     
     chain = prompt | llm | parser
-    result : NudgeList = chain.invoke(state)
+    result : PandaticNudgeList = chain.invoke(state)
 
     return {'messages' : [AIMessage(content = str(result))], 'nudges': result.nudges}
 
 def nudge_reviewer(state):
-    nudges: NudgeList = state['nudges']
+    nudges: PandaticNudgeList = state['nudges']
     current_nudge_index: int = state['current_nudge_index']
-    nudge: Nudge = nudges[current_nudge_index]
+    nudge: PandaticNudge = nudges[current_nudge_index]
     template = prompts.nudge_review_template
     human_message = HumanMessage(content = template.format(nudge=nudge))
     state["messages"] = add_messages(state["messages"], human_message)
@@ -105,7 +105,7 @@ def nudge_reviewer_end(state):
     current_nudge_index = state['current_nudge_index']
     len_nudges = len(state['nudges'])
 
-    output_nudges : NudgeList = state['output_nudges']
+    output_nudges : PandaticNudgeList = state['output_nudges']
     output_nudges.append(state['nudges'][current_nudge_index])
 
     diff = len_nudges - current_nudge_index -1
