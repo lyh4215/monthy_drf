@@ -8,7 +8,7 @@ import base64
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['date', 'extraSpan', 'published', 'created_at', 'updated_at', 'author', 'pages']
         read_only_fields = ['created_at', 'updated_at', 'author']
 
 
