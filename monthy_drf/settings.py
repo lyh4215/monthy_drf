@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
 
@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.kakao',
+    'allauth.socialaccount.providers.apple',
 
     'corsheaders',
 ]
@@ -194,7 +195,26 @@ SOCIALACCOUNT_PROVIDERS = {
       'secret': os.getenv('SOCIAL_AUTH_KAKAO_SECRET'),
       'key': '',
     }
-  }
+  },
+  "apple": {
+    "APPS": [{
+            # Your service identifier.
+            "client_id": os.getenv('SOCIAL_AUTH_APPLE_CLIENT_ID'),
+
+            # The Key ID (visible in the "View Key Details" page).
+            "secret": os.getenv('SOCIAL_AUTH_APPLE_SECRET'),
+
+             # Member ID/App ID Prefix -- you can find it below your name
+             # at the top right corner of the page, or it’s your App ID
+             # Prefix in your App ID.
+            "key": os.getenv('SOCIAL_AUTH_APPLE_KEY'),
+
+            "settings": {
+                # The certificate you downloaded when generating the key.
+                "certificate_key": os.getenv('SOCIAL_AUTH_APPLE_CERTIFICATE_KEY'),
+            }
+        }]
+    }
 }
 
 REST_AUTH = {
