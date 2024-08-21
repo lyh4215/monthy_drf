@@ -20,6 +20,8 @@ class NudgeRetrieveAPIView(generics.RetrieveAPIView):
     def get_object(self):
         queryset = self.get_queryset()
         nudge = queryset.first()
+        if nudge is None:
+            raise NotFound(detail="No nudges found for the current user.")
         if nudge.date < timezone.now():
             raise NotFound(detail="All pending nudges are expired")
         elif nudge.status != Nudge.Status.PENDING:
