@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.pythonanywhere.com', 'localhost']
+ALLOWED_HOSTS = ['34.64.209.29', '.pythonanywhere.com', 'localhost']
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -214,7 +214,7 @@ SOCIALACCOUNT_PROVIDERS = {
                 "certificate_key": os.getenv('SOCIAL_AUTH_APPLE_CERTIFICATE_KEY'),
             }
         }]
-    }
+   }
 }
 
 REST_AUTH = {
