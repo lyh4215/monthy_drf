@@ -4,7 +4,7 @@ from .nudge_necessity_prompts import (
 )
 from .nudge_prompts import (
     make_new_nudge_template,
-    nudge_reviewer_template,
+    nudge_review_template,
 )
 from .persona_prompts import (
     make_persona_template,
