@@ -209,6 +209,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+SOCIALACCOUNT_ADAPTER = 'accounts.adapters.SetUsernameAddressSocialAccountAdapter'
 
 SOCIALACCOUNT_PROVIDERS = {
   'kakao': {
