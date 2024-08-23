@@ -14,9 +14,6 @@ class SetUsernameAddressSocialAccountAdapter(DefaultSocialAccountAdapter):
             if email:
                 base_username = email.split('@')[0]
                 user.username = self.generate_unique_username(base_username)
-
-        if not user.address:
-            user.address = user.username
         
         return user
 
