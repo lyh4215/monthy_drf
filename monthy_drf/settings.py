@@ -29,8 +29,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['34.64.209.29', '.pythonanywhere.com', 'localhost']
+ALLOWED_HOSTS = ['api.monthy-api.com', '34.64.209.29', '.pythonanywhere.com', 'localhost']
 
+CSRF_TRUSTED_ORIGINS = [
+       'https://api.monthy-api.com'
+]
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'https://monthy.co',
