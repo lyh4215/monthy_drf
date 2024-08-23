@@ -1,9 +1,9 @@
 from accounts.models import User
 from django.db.models import UniqueConstraint
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
-from django.db import models
+from django.db import models, transaction
 import os
 
 class Post(models.Model):
@@ -51,10 +51,15 @@ class PostUpdatedAt(models.Model):
 
 @receiver([post_save, post_delete], sender=Post)
 def update_post_updated_at_on_post_change(sender, instance, **kwargs):
-    post_updated_at, created = PostUpdatedAt.objects.get_or_create(
-        author=instance.author,
-        year=instance.date.year,
-        month=instance.date.month
-    )
-    post_updated_at.updated_at = timezone.now()
-    post_updated_at.save()
+    def update_post_updated_at():
+        try:
+            post_updated_at, created = PostUpdatedAt.objects.get_or_create(
+                author=instance.author,
+                year=instance.date.year,
+                month=instance.date.month
+            )
+            post_updated_at.updated_at = timezone.now()
+            post_updated_at.save()
+        except User.DoesNotExist:
+            pass
+    transaction.on_commit(update_post_updated_at)
