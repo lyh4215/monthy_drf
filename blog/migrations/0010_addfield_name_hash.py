@@ -31,13 +31,12 @@ def move_postimages_with_hash(apps, schema_editor):
         post_image.src.name = new_path
         post_image.save()
         #thumbContent change
-        if post_image.post.thumbType == 1:
-            if post_image.post.thumbContent == old_path:
-                post_image.post.thumbContent = new_path
-                post_image.post.save()
-
-        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.name_hash}{ext}'
         local_old_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
+        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.name_hash}{ext}'
+        if post_image.post.thumbType == 1:
+            if post_image.post.thumbContent == local_old_path:
+                post_image.post.thumbContent = local_new_path
+                post_image.post.save()
         #body change
         post: Post = post_image.post
         post.body = post.body.replace(local_old_path, local_new_path)
@@ -61,14 +60,15 @@ def reverse_move_postimages_with_hash(apps, schema_editor):
         post_image.src.name = old_path
         post_image.save()
         #thumbContent change
+        local_old_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.name_hash}{ext}'
+        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
         if post_image.post.thumbType == 1:
-            if post_image.post.thumbContent == new_path:
-                post_image.post.thumbContent = old_path
+            if post_image.post.thumbContent == local_new_path:
+                post_image.post.thumbContent = local_old_path
                 post_image.post.save()
         #body change
         post: Post = post_image.post
-        local_old_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
-        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.name_hash}{ext}'
+        
         post.body = post.body.replace(local_new_path, local_old_path)
         post.save()
 
