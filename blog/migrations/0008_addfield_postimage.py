@@ -56,9 +56,17 @@ def move_postimages(apps, schema_editor):
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     for post_image in PostImage.objects.all():
         try:
+            
             old_path = post_image.src.name
             ext = os.path.splitext(old_path)[1]
             new_path = f'images/{post_image.post.author.username}/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
+            
+            #thumbContent change
+            if post_image.post.thumbType == 1:
+                if post_image.post.thumbContent == old_path:
+                    post_image.post.thumbContent = new_path
+                    post_image.post.save()
+            
             s3.copy_object(Bucket=bucket_name,
                         CopySource={'Bucket': bucket_name, 'Key': old_path},
                         Key=new_path)
@@ -66,17 +74,9 @@ def move_postimages(apps, schema_editor):
             post_image.src.name = new_path
             post_image.save()
         except:
-            pass
-        #thumbContent change
-        try:
-            if post_image.post.thumbType == 1:
-                if post_image.post.thumbContent == old_path:
-                    post_image.post.thumbContent = new_path
-                    post_image.post.save()
-            local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
-        except:
-            pass
+            post_image.delete()
         #body change
+        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
         post: Post = post_image.post
         post.body = post.body.replace(S3_URL+old_path, local_new_path)
         post.save()
