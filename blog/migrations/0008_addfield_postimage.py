@@ -55,23 +55,27 @@ def move_postimages(apps, schema_editor):
                       aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
     bucket_name = settings.AWS_STORAGE_BUCKET_NAME
     for post_image in PostImage.objects.all():
-        old_path = post_image.src.name
-        ext = os.path.splitext(old_path)[1]
-        new_path = f'images/{post_image.post.author.username}/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
-        s3.copy_object(Bucket=bucket_name,
-                    CopySource={'Bucket': bucket_name, 'Key': old_path},
-                    Key=new_path)
-        s3.delete_object(Bucket=bucket_name, Key=old_path)
-        post_image.src.name = new_path
-        post_image.save()
-
+        try:
+            old_path = post_image.src.name
+            ext = os.path.splitext(old_path)[1]
+            new_path = f'images/{post_image.post.author.username}/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
+            s3.copy_object(Bucket=bucket_name,
+                        CopySource={'Bucket': bucket_name, 'Key': old_path},
+                        Key=new_path)
+            s3.delete_object(Bucket=bucket_name, Key=old_path)
+            post_image.src.name = new_path
+            post_image.save()
+        except:
+            pass
         #thumbContent change
-        if post_image.post.thumbType == 1:
-            if post_image.post.thumbContent == old_path:
-                post_image.post.thumbContent = new_path
-                post_image.post.save()
-        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
-        
+        try:
+            if post_image.post.thumbType == 1:
+                if post_image.post.thumbContent == old_path:
+                    post_image.post.thumbContent = new_path
+                    post_image.post.save()
+            local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
+        except:
+            pass
         #body change
         post: Post = post_image.post
         post.body = post.body.replace(S3_URL+old_path, local_new_path)
