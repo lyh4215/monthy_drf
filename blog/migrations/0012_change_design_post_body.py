@@ -93,6 +93,8 @@ def change_body_str(body_str) -> str:
             new_body = type_bullet_list(page, new_body)
         elif page['type'] == 'orderedList':
             new_body = type_ordered_list(page, new_body)
+        elif page['type'] == 'horizontalRule':
+            pass
         else: 
             type = page['type']
             raise Exception(f'unexpected content type: {type}')
