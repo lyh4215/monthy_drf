@@ -1,55 +1,48 @@
 from dotenv import load_dotenv
+
 load_dotenv(override=True)
 
 from langchain.prompts import PromptTemplate
-from langchain_openai import OpenAI
+from langchain.output_parsers import PydanticOutputParser
+
 from blog.models import Post
 from nudge.models import Persona
-from pydantic import BaseModel, Field
-from langchain.output_parsers import PydanticOutputParser
 from accounts.models import User
-import nudge.llm.prompts as prompts
-
-from django.core.exceptions import ObjectDoesNotExist
-import os
 
 from nudge.llm import llm
-
-
-class PantaticPersona(BaseModel):
-    persona: str = Field(description="persona")
-
-class DepressionRate(BaseModel):
-    depression_rate: float = Field(description="depression rate")
+import nudge.llm.prompts as prompts
+from nudge.llm.pandatic_model import PandaticPersona, PandaticNudgeNecessity
 
 def get_nudge_necessity(post : Post) -> bool:
+    template = prompts.nudge_necessity_template
+    pydantic_object = PandaticNudgeNecessity
+
     try:
         persona = post.author.persona.persona
     except:
         persona = 'no persona'
     author = post.author
+    recent_posts = Post.objects.filter(author=author).order_by('-created_at')[:5]
+    recent_posts_str = post_to_str(recent_posts)
     #TODO : make this more specific
     persona: str = persona
-
-    template = prompts.depression_rate_template
-    parser = PydanticOutputParser(pydantic_object=DepressionRate)
+    parser = PydanticOutputParser(pydantic_object=pydantic_object)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(
         template = template,
         partial_variables={"format_instructions": format_instructions})
     chain = prompt | llm | parser
-    
-    output = chain.invoke({'context': post.pages, 'persona': persona})
+    output = chain.invoke({'context': post.pages, 'persona': persona, 'recent_posts': recent_posts_str})
 
-    depression_rate = output.depression_rate
-    if depression_rate > 0.5:
+    nudge_necessity = output.nudge_necessity
+    if nudge_necessity:
         return True
     else:
         return False
 
 #input : new diary
 #modify persona
-#output : depression rate
+#output : new persona
 def modify_persona(post : Post) -> str:
     try:
         persona = post.author.persona
@@ -62,7 +55,7 @@ def modify_persona(post : Post) -> str:
     persona: str = persona.persona
 
     template = prompts.modify_persona_template
-    parser = PydanticOutputParser(pydantic_object=PantaticPersona)
+    parser = PydanticOutputParser(pydantic_object=PandaticPersona)
     format_instructions = parser.get_format_instructions()
     prompt = PromptTemplate.from_template(
         template = template,

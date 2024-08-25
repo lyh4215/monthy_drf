@@ -1,5 +1,3 @@
-
-
 from PIL import Image as PILImage
 import io
 # 이미지 파일을 읽어와서 표시
