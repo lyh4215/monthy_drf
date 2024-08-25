@@ -58,20 +58,22 @@ def move_postimages(apps, schema_editor):
         old_path = post_image.src.name
         ext = os.path.splitext(old_path)[1]
         new_path = f'images/{post_image.post.author.username}/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
-        s3.copy_object(Bucket=bucket_name,
-                    CopySource={'Bucket': bucket_name, 'Key': old_path},
-                    Key=new_path)
-        s3.delete_object(Bucket=bucket_name, Key=old_path)
-        post_image.src.name = new_path
-        post_image.save()
-
+        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
         #thumbContent change
         if post_image.post.thumbType == 1:
             if post_image.post.thumbContent == old_path:
-                post_image.post.thumbContent = new_path
+                post_image.post.thumbContent = local_new_path
                 post_image.post.save()
-        local_new_path = f'images/{post_image.post.date}/{post_image.device_id}/{post_image.index}{ext}'
-        
+        post_image.src.name = new_path
+        post_image.save()
+        try:
+            s3.copy_object(Bucket=bucket_name,
+                        CopySource={'Bucket': bucket_name, 'Key': old_path},
+                        Key=new_path)
+            s3.delete_object(Bucket=bucket_name, Key=old_path)
+        except:
+            #post_image.delete()
+            print(f"Error moving post image {post_image} / {new_path}")
         #body change
         post: Post = post_image.post
         post.body = post.body.replace(S3_URL+old_path, local_new_path)
@@ -107,6 +109,23 @@ def reverse_move_postimages(apps, schema_editor):
         post.body = post.body.replace(local_new_path, S3_URL+old_path)
         post.save()
 
+def delete_not_exist_post_images(apps, schema_editor):
+    PostImage = apps.get_model('blog', 'PostImage')
+    Post = apps.get_model('blog', 'Post')
+    s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                      aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+    bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+    for post_image in PostImage.objects.all():
+        try:
+            s3.head_object(Bucket=bucket_name, Key=post_image.src.name)
+        except:
+            print(f'delete post image : {post_image.src.name} / {post_image}')
+            post_image.delete()
+    
+
+def reverse_delete_not_exist_post_images(apps, schema_editor):
+    pass
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -128,4 +147,5 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(set_index, reverse_set_index),
         migrations.RunPython(move_postimages, reverse_move_postimages),
+        migrations.RunPython(delete_not_exist_post_images, reverse_delete_not_exist_post_images),
     ]
