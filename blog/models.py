@@ -33,10 +33,10 @@ def image_upload_to(instance, filename):
     return f'images/{instance.post.author.username}/{instance.post.date}/{instance.device_id}/{instance.name_hash}{ext}'
 
 class PostImage(models.Model):
-    src = models.ImageField(upload_to=image_upload_to)
+    src = models.ImageField(upload_to=image_upload_to, max_length=255)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name='images')
     device_id = models.UUIDField()  # UUID4
-    name_hash = models.CharField(max_length=100)
+    name_hash = models.CharField(max_length=200)
     class Meta:
         constraints = [
             UniqueConstraint(fields=['post', 'device_id', 'name_hash'], name='unique_post_device_name_hash')
