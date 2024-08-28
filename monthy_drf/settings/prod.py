@@ -23,7 +23,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['cloud', 'console'],
+            'handlers': ['cloud', 'file'],
             'level': 'DEBUG',
             'propagate': True,
         },
