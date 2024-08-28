@@ -9,4 +9,6 @@ urlpatterns = [
     path(r'logout/', TokenBlacklistView.as_view(), name='logout'),
     path(r'me/', views.UserRetrieveUpdateAPIView.as_view(), name='me'),
     path(r'profile/<str:address>/', views.UserRetrieveAPIView.as_view(), name='profile'),
+    path(r'delete-account/', views.UserDestroyAPIView.as_view(), name='profile_delete'),
+    path(r'delete-apple-account/', views.AppleUserDestroyAPIView.as_view(), name='apple_profile_delete'),
 ]
