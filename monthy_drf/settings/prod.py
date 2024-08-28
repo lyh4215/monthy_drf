@@ -16,9 +16,9 @@ LOGGING = {
             'filename': '/var/log/django/error.log',
         },
         'cloud': {
-               'level': 'DEBUG',
-               'class': 'google.cloud.logging.handlers.CloudLoggingHandler',
-               'client': client,
+            'level': 'INFO',
+            'class': 'google.cloud.logging.handlers.CloudLoggingHandler',
+            'client': client,
         },
     },
     'loggers': {
