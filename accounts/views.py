@@ -74,12 +74,9 @@ class UserDestroyAPIView(generics.DestroyAPIView):
         return self.request.user
     
 class AppleUserDestroyAPIView(APIView):
-    def get_object(self):
-        return self.request.user
-    
     def post(self, request, *args, **kwargs):
-        user = self.get_object()
-        serializer = TokenValidationSerializer(data=request.data)
+        user = request.user
+        serializer = TokenValidationSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         token = serializer.validated_data.get('refresh_token')
         payload = {
