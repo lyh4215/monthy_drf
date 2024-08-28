@@ -81,7 +81,7 @@ class AppleUserDestroyAPIView(APIView):
         token = serializer.validated_data.get('refresh_token')
         payload = {
             'client_id': os.getenv('SOCIAL_AUTH_APPLE_CLIENT_ID'),
-            'client_secret': os.getenv('SOCIAL_AUTH_APPLE_CLIENT_SECRET'),
+            'client_secret': os.getenv('SOCIAL_AUTH_APPLE_SECRET'),
             'token': token,
             'token_type_hint': 'refresh_token'
         }
@@ -91,6 +91,6 @@ class AppleUserDestroyAPIView(APIView):
             self.perform_destroy(user)
             return Response({'message': 'user deleted'}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({'message': 'apple token revoke failed'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'apple token revoke failed', 'details' : response.text}, status=status.HTTP_400_BAD_REQUEST)
     def perform_destroy(self, instance):
         instance.delete()
