@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.db import models, transaction
 import os
+from datetime import datetime
 
 class Post(models.Model):
     class ExtraSpanType(models.IntegerChoices):
@@ -53,10 +54,14 @@ class PostUpdatedAt(models.Model):
 def update_post_updated_at_on_post_change(sender, instance, **kwargs):
     def update_post_updated_at():
         try:
+            if isinstance(instance.date, str):
+                instance_date = datetime.strptime(instance.date, '%Y-%m-%d').date()
+            else:
+                instance_date = instance.date
             post_updated_at, created = PostUpdatedAt.objects.get_or_create(
                 author=instance.author,
-                year=instance.date.year,
-                month=instance.date.month
+                year=instance_date.year,
+                month=instance_date.month
             )
             post_updated_at.updated_at = timezone.now()
             post_updated_at.save()
