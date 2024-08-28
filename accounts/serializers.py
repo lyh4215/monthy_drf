@@ -7,4 +7,4 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'address', 'profile_image', 'enable_publish')
 
 class TokenValidationSerializer(serializers.Serializer):
-    token = serializers.CharField(required=True)
+    refresh_token = serializers.CharField(required=True)

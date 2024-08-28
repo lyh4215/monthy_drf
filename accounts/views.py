@@ -5,7 +5,7 @@ import os
 from .models import User
 from .serializers import UserSerializer, TokenValidationSerializer
 from django.shortcuts import redirect
-
+from rest_framework.views import APIView
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.kakao import views as kakao_views
@@ -73,19 +73,15 @@ class UserDestroyAPIView(generics.DestroyAPIView):
     def get_object(self):
         return self.request.user
     
-class AppleUserDestroyAPIView(generics.DestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
+class AppleUserDestroyAPIView(APIView):
     def get_object(self):
         return self.request.user
     
-    def delete(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user = self.get_object()
         serializer = TokenValidationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.validated_data['refresh_token']
-
+        token = serializer.validated_data.get('refresh_token')
         payload = {
             'client_id': os.getenv('SOCIAL_AUTH_APPLE_CLIENT_ID'),
             'client_secret': os.getenv('SOCIAL_AUTH_APPLE_CLIENT_SECRET'),
@@ -99,3 +95,5 @@ class AppleUserDestroyAPIView(generics.DestroyAPIView):
             return Response({'message': 'user deleted'}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({'message': 'apple token revoke failed'}, status=status.HTTP_400_BAD_REQUEST)
+    def perform_destroy(self, instance):
+        instance.delete()
