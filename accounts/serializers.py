@@ -5,3 +5,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'address', 'profile_image', 'enable_publish')
+
+class TokenValidationSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
