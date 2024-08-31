@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework import mixins
 from .models import Friend, BlockedUser
 from .serializers import FriendSendSerializer, FriendReceiveSerializer, BlockedUserSerializer
+from accounts.serializers import UserSerializer
 from .permissions import IsFriendSender, IsFriendReceiver, IsBlocker
 from django.contrib.auth import get_user_model
-
+from rest_framework.permissions import AllowAny
 
 User = get_user_model()
 

@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.models import User
+from social.models import BlockedUser
 from rest_framework.permissions import AllowAny
 from .permissions import IsAuthor
 from django.shortcuts import get_object_or_404
@@ -45,16 +46,22 @@ class PostListAPIView(generics.ListAPIView):
 class PostListWithImageLinkAPIView(generics.ListAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [AllowAny]
+    #permission_classes = [AllowAny]
 
     def list(self, request, *args, **kwargs):
         address = self.kwargs.get('address')
-        author = get_object_or_404(User, address=address)
+
+        #exclude blocked users
+        user = self.request.user
+        user_list = User.objects.all()
+        blocker_users = BlockedUser.objects.filter(blocked_user=user).values_list('blocker__address', flat=True)
+        user_list = user_list.exclude(address__in=blocker_users)
+
+        author = get_object_or_404(user_list, address=address)
 
         queryset = self.get_queryset().filter(author__address=address)
 
         # filter by published
-        user = self.request.user
         if user.is_anonymous or user.address != author.address:
             queryset = queryset.filter(published=True)
 
