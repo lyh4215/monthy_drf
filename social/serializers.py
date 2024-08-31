@@ -24,3 +24,11 @@ class FriendSendSerializer(serializers.ModelSerializer):
         model = Friend
         fields = ['friend', 'status', 'created_at']
         read_only_fields = ['status', 'created_at']
+
+class FriendReceiveSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all())
+
+    class Meta:
+        model = Friend
+        fields = ['user', 'status', 'created_at']
+        read_only_fields = ['status', 'created_at']

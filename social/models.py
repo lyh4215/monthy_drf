@@ -17,4 +17,4 @@ class Friend(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} > {self.friend.username}"
+        return f"[{self.get_status_display()}] {self.user.username} > {self.friend.username}"
