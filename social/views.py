@@ -2,9 +2,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
-from .models import Friend
-from .serializers import FriendSendSerializer, FriendReceiveSerializer
-from .permissions import IsFriendSender, IsFriendReceiver
+from .models import Friend, BlockedUser
+from .serializers import FriendSendSerializer, FriendReceiveSerializer, BlockedUserSerializer
+from .permissions import IsFriendSender, IsFriendReceiver, IsBlocker
 from django.contrib.auth import get_user_model
 
 
@@ -48,3 +48,17 @@ class FriendReceiveViewSet(mixins.UpdateModelMixin,
         else:
             return Response({'status': 'error'}, status=status.HTTP_400_BAD_REQUEST)
     
+class BlockedUserViewSet(mixins.CreateModelMixin,
+                         mixins.ListModelMixin,
+                         mixins.RetrieveModelMixin,
+                         mixins.DestroyModelMixin,
+                         viewsets.GenericViewSet):
+    serializer_class = BlockedUserSerializer
+    permission_classes = [IsBlocker]
+    lookup_field = 'blocked_user__address'
+    def get_queryset(self):
+        user = self.request.user
+        return BlockedUser.objects.filter(blocker=user)
+    
+    def perform_create(self, serializer):
+        serializer.save(blocker=self.request.user)
