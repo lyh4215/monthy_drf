@@ -1,15 +1,38 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework import status
 from rest_framework import mixins
+from rest_framework import generics
 from .models import Friend, BlockedUser
-from .serializers import FriendSendSerializer, FriendReceiveSerializer, BlockedUserSerializer
-from accounts.serializers import UserSerializer
+from .serializers import FriendSendSerializer, FriendReceiveSerializer, BlockedUserSerializer, UserSearchSerializer
 from .permissions import IsFriendSender, IsFriendReceiver, IsBlocker
 from django.contrib.auth import get_user_model
-from rest_framework.permissions import AllowAny
 
 User = get_user_model()
+
+class UserSearchListAPIView(generics.ListAPIView):
+    serializer_class = UserSearchSerializer
+    
+    def get_queryset(self):
+        user = self.request.user
+        queryset = User.objects.exclude(address=user.address)
+
+        #exclude not published users
+        queryset = queryset.filter(enable_publish=True)
+        
+        #blocked by user
+        blockers = BlockedUser.objects.filter(blocked_user=user).values_list('blocker__address', flat=True)
+        queryset = queryset.exclude(address__in=blockers)
+
+        #search
+        query = self.request.query_params.get('query', '')
+        if query:
+            queryset = queryset.filter(address__icontains=query)
+        else: #invalid search
+            queryset = User.objects.none()
+
+        return queryset
 
 class FriendSendViewSet(mixins.CreateModelMixin,
                         mixins.ListModelMixin,
@@ -39,6 +62,9 @@ class FriendReceiveViewSet(mixins.UpdateModelMixin,
         return Friend.objects.filter(friend=user)
     
     def update(self, request, *args, **kwargs):
+        raise MethodNotAllowed("PUT method is not allowed. Use PATCH for partial updates.")
+    
+    def partial_update(self, request, *args, **kwargs):
         friend_request = self.get_object()
         if friend_request.status == 'pending':
             friend_request.status = 'accepted'
