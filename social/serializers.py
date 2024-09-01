@@ -5,9 +5,25 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class UserSearchSerializer(serializers.ModelSerializer):
+    friend_status = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['address', 'profile_image']
+        fields = ['address', 'profile_image', 'friend_status']
+        read_only_fields = ['friend_status', 'address', 'profile_image']
+    def get_friend_status(self, obj):
+        user = self.context['request'].user
+        friend_status = {}
+        try:
+            friend_send = Friend.objects.get(user=user, friend=obj)
+            friend_status['send'] = friend_send.status
+        except:
+            friend_status['send'] = None
+        try:
+            friend_receive = Friend.objects.get(user=obj, friend=user)
+            friend_status['receive'] = friend_receive.status
+        except:
+            friend_status['receive'] = None
+        return friend_status
 
 class FriendSendSerializer(serializers.ModelSerializer):
     friend = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all())
