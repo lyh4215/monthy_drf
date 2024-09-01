@@ -14,7 +14,7 @@ User = get_user_model()
 
 class UserSearchPagination(PageNumberPagination):
     page_size = 10
-    
+
 class UserSearchListAPIView(generics.ListAPIView):
     serializer_class = UserSearchSerializer
     pagination_class = UserSearchPagination
@@ -71,11 +71,11 @@ class FriendReceiveViewSet(mixins.UpdateModelMixin,
     
     def partial_update(self, request, *args, **kwargs):
         friend_request = self.get_object()
-        if friend_request.status == 'pending':
-            friend_request.status = 'accepted'
+        if friend_request.status == Friend.Status.PENDING:
+            friend_request.status = Friend.Status.ACCEPTED
             friend_request.save()
             return Response({'status': 'accepted'}, status=status.HTTP_200_OK)
-        elif friend_request.status == 'accepted':
+        elif friend_request.status == Friend.Status.ACCEPTED:
             return Response({'status': 'already accepted'}, status=status.HTTP_200_OK)
         else:
             return Response({'status': 'error'}, status=status.HTTP_400_BAD_REQUEST)
