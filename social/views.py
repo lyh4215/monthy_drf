@@ -8,11 +8,16 @@ from .models import Friend, BlockedUser
 from .serializers import FriendSendSerializer, FriendReceiveSerializer, BlockedUserSerializer, UserSearchSerializer
 from .permissions import IsFriendSender, IsFriendReceiver, IsBlocker
 from django.contrib.auth import get_user_model
+from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
 
+class UserSearchPagination(PageNumberPagination):
+    page_size = 10
+    
 class UserSearchListAPIView(generics.ListAPIView):
     serializer_class = UserSearchSerializer
+    pagination_class = UserSearchPagination
     
     def get_queryset(self):
         user = self.request.user
@@ -88,4 +93,11 @@ class BlockedUserViewSet(mixins.CreateModelMixin,
         return BlockedUser.objects.filter(blocker=user)
     
     def perform_create(self, serializer):
-        serializer.save(blocker=self.request.user)
+        blocked_user = serializer.validated_data['blocked_user']
+        blocker = self.request.user
+        
+        #delete friend
+        Friend.objects.filter(user=blocker, friend=blocked_user).delete()
+        Friend.objects.filter(user=blocked_user, friend=blocker).delete()
+        
+        serializer.save(blocker=blocker)
