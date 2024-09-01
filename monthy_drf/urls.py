@@ -25,5 +25,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('allauth.urls'), name='socialaccount_signup'),
     path('nudge/', include('nudge.urls')),
+    path('social/', include('social.urls')),
 ]
 # ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
