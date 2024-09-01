@@ -54,8 +54,8 @@ class PostListWithImageLinkAPIView(generics.ListAPIView):
         #exclude blocked users
         user = self.request.user
         user_list = User.objects.all()
-        blocker_users = BlockedUser.objects.filter(blocked_user=user).values_list('blocker__address', flat=True)
-        user_list = user_list.exclude(address__in=blocker_users)
+        blockers = BlockedUser.objects.filter(blocked_user=user).values_list('blocker__address', flat=True)
+        user_list = user_list.exclude(address__in=blockers)
 
         author = get_object_or_404(user_list, address=address)
 
@@ -78,17 +78,17 @@ class PostListWithImageLinkAPIView(generics.ListAPIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
         # Create a list to hold the modified posts
-        modified_posts = []
+        posts_with_global_imgurl = []
         for post in queryset:
-            modified_post = post
+            post_with_global_imgurl = post
             for post_image in post.images.all():
                 local_image_link = get_local_image_link(post_image, author)
                 image_link = get_image_link(post_image, author)
-                modified_post.pages = modified_post.pages.replace(local_image_link, image_link)
-            modified_posts.append(modified_post)
+                post_with_global_imgurl.pages = post_with_global_imgurl.pages.replace(local_image_link, image_link)
+            posts_with_global_imgurl.append(post_with_global_imgurl)
         
         # Serialize the modified posts
-        sorted_posts = sorted(modified_posts, key=lambda x: x.date)
+        sorted_posts = sorted(posts_with_global_imgurl, key=lambda x: x.date)
         serializer = self.get_serializer(sorted_posts, many=True)
         return Response(serializer.data)
 

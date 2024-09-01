@@ -15,6 +15,8 @@ class FriendSendSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         friend = data['friend']
+        if user == friend:
+            raise serializers.ValidationError("You cannot send a friend request to yourself.")
         if Friend.objects.filter(user=user, friend=friend).exists():
             if Friend.objects.get(user=user, friend=friend).status == Friend.Status.PENDING:
                 raise serializers.ValidationError("Friend request already sent.")
@@ -43,6 +45,8 @@ class BlockedUserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         blocked_user = data['blocked_user']
+        if user == blocked_user:
+            raise serializers.ValidationError("You cannot block yourself.")
         if BlockedUser.objects.filter(blocker=user, blocked_user=blocked_user).exists():
             raise serializers.ValidationError("User already blocked.")
         return data

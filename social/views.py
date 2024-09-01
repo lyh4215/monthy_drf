@@ -49,7 +49,7 @@ class FriendSendViewSet(mixins.CreateModelMixin,
     lookup_field = 'friend__address'
     def get_queryset(self):
         user = self.request.user
-        return Friend.objects.filter(user=user)
+        return Friend.objects.filter(user=user).order_by('-created_at')
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -64,7 +64,7 @@ class FriendReceiveViewSet(mixins.UpdateModelMixin,
     serializer_class = FriendReceiveSerializer
     def get_queryset(self):
         user = self.request.user
-        return Friend.objects.filter(friend=user)
+        return Friend.objects.filter(friend=user).order_by('-created_at')
     
     def update(self, request, *args, **kwargs):
         raise MethodNotAllowed("PUT method is not allowed. Use PATCH for partial updates.")
@@ -90,7 +90,7 @@ class BlockedUserViewSet(mixins.CreateModelMixin,
     lookup_field = 'blocked_user__address'
     def get_queryset(self):
         user = self.request.user
-        return BlockedUser.objects.filter(blocker=user)
+        return BlockedUser.objects.filter(blocker=user).order_by('-created_at')
     
     def perform_create(self, serializer):
         blocked_user = serializer.validated_data['blocked_user']
