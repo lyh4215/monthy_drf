@@ -5,12 +5,13 @@ from django.db.models import UniqueConstraint
 User = get_user_model()
 
 class Friend(models.Model):
+    class Status(models.IntegerChoices):
+        PENDING = 0, 'Pending'
+        ACCEPTED = 1, 'Accepted'
     user = models.ForeignKey(User, related_name='friend_send', on_delete=models.CASCADE)
     friend = models.ForeignKey(User, related_name='friend_receive', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10,
-                              choices=[('pending', 'Pending'), ('accepted', 'Accepted')],
-                              default='pending')
+    status = models.IntegerField(choices=Status.choices, default=Status.PENDING)
     class Meta:
         constraints = [
             UniqueConstraint(fields=['user', 'friend'], name='unique_friend')

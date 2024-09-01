@@ -16,7 +16,12 @@ class FriendSendSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         friend = data['friend']
         if Friend.objects.filter(user=user, friend=friend).exists():
-            raise serializers.ValidationError("Friend request already sent.")
+            if Friend.objects.get(user=user, friend=friend).status == Friend.Status.PENDING:
+                raise serializers.ValidationError("Friend request already sent.")
+            elif Friend.objects.get(user=user, friend=friend).status == Friend.Status.ACCEPTED:
+                raise serializers.ValidationError("Friend request already accepted.")
+            else:
+                raise serializers.ValidationError("Serializer error")
         return data
     
     class Meta:
