@@ -9,9 +9,7 @@ class RequestLoggingMiddleware:
     def __call__(self, request):
         # 요청 정보를 로깅
         logger.info(
-            f"Request Method: {request.method}, "
-            f"Request Path: {request.path}, "
-            f"Request Body: {request.body.decode('utf-8', errors='replace')}"
+            f"[{request.method}] {request.path}"
         )
         response = self.get_response(request)
         return response
@@ -20,7 +18,5 @@ class RequestLoggingMiddleware:
         # 에러 발생 시 요청 정보를 로깅
         logger.error(
             f"Exception occurred: {exception}\n"
-            f"Request Method: {request.method}\n"
-            f"Request Path: {request.path}\n"
-            f"Request Body: {request.body.decode('utf-8', errors='replace')}"
+            f"[{request.method}] {request.path} {request.body.decode('utf-8', errors='replace')}"
         )
