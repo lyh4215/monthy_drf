@@ -27,6 +27,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'django.request': {
+            'handlers': ['cloud', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
 
