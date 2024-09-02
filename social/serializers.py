@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Friend, BlockedUser
 from django.contrib.auth import get_user_model
+from accounts.serializers import UserSerializer
 
 User = get_user_model()
 
@@ -26,7 +27,8 @@ class UserSearchSerializer(serializers.ModelSerializer):
         return friend_status
 
 class FriendSendSerializer(serializers.ModelSerializer):
-    friend = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all())
+    friend = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all(), write_only=True)
+    info = UserSerializer(source='friend', read_only=True)
 
     def validate(self, data):
         user = self.context['request'].user
@@ -44,16 +46,18 @@ class FriendSendSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Friend
-        fields = ['friend', 'status', 'created_at']
-        read_only_fields = ['status', 'created_at']
+        fields = ['friend', 'status', 'created_at', 'info']
+        read_only_fields = ['status', 'created_at', 'info']
+
 
 class FriendReceiveSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all())
+    user = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all(), write_only=True)
+    info = UserSerializer(source='user', read_only=True)
 
     class Meta:
         model = Friend
-        fields = ['user', 'status', 'created_at']
-        read_only_fields = ['status', 'created_at']
+        fields = ['user', 'status', 'created_at', 'info']
+        read_only_fields = ['status', 'created_at', 'info']
 
 class BlockedUserSerializer(serializers.ModelSerializer):
     blocked_user = serializers.SlugRelatedField(slug_field='address', queryset=User.objects.all())
