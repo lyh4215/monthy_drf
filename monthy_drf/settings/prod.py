@@ -10,11 +10,6 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': '/var/log/django/error.log',
-        },
         'cloud': {
             'level': 'INFO',
             'class': 'google.cloud.logging.handlers.CloudLoggingHandler',
@@ -23,12 +18,12 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['cloud', 'file'],
+            'handlers': ['cloud'],
             'level': 'DEBUG',
             'propagate': True,
         },
         'django.request': {
-            'handlers': ['cloud', 'file'],
+            'handlers': ['cloud'],
             'level': 'INFO',
             'propagate': False,
         },
